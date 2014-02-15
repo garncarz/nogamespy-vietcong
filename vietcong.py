@@ -11,8 +11,8 @@ def getServersListFile():
 		"?gamename=vietcong&fields=\\hbver\\password\\country\\uver" + \
 		"\\hostname\\mapname\\gametype\\numplayers\\maxplayers")
 
-def parseServersList(data):
-	tree = etree.parse(data, parser = etree.HTMLParser())
+def parseServersList(file):
+	tree = etree.parse(file, parser = etree.HTMLParser())
 	rows = tree.xpath("/html/body/form/table/tr")[1:]
 	
 	columns = {
@@ -26,8 +26,7 @@ def parseServersList(data):
 		"mode": 12,
 		"players": 13,
 		"maxplayers": 14,
-		"hradba": 6
-	}
+		"hradba": 6 }
 
 	servers = []
 	for row in rows:
@@ -43,6 +42,7 @@ def parseServersList(data):
 
 def getServerInfo(server):
 	conn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	conn.settimeout(2)
 	conn.connect((server["ip"], server["infoport"]))
 	conn.send("\\status\\players\\".encode("utf-8"))
 	return conn.recv(4096).decode("utf-8")
@@ -51,11 +51,39 @@ def parseServerInfo(data):
 	arr = re.split("\\\\", data)[1:-4]
 	return dict(zip(arr[::2], arr[1::2]))
 
+def mergeServerInfo(server, serverInfo):
+	server["port"] = serverInfo["hostport"]
+	server["dedic"] = True if "dedic" in serverInfo else False
+	server["vietnam"] = True if "vietnam" in serverInfo else False
+	
+	columns = {
+		"name": "player",
+		"ping": "ping",
+		"frags": "frags" }
+	players = []
+	for i in range(int(serverInfo["numplayers"])):
+		try:
+			player = {}
+			for column, columnInfo in columns.items():
+				player[column] = serverInfo[columnInfo + "_" + str(i)]
+			players.append(player)
+		except KeyError:
+			break
+	server["players"] = players
 
-# f = open("list.html", "r")
-f = getServersListFile()
-servers = parseServersList(f)
-servers = list(filter(lambda s: s["players"] > 0, servers))
-print(servers)
-print(parseServerInfo(getServerInfo(servers[1])))
+
+def getAll():
+	servers = parseServersList(getServersListFile())
+	for server in servers:
+		try:
+			mergeServerInfo(server, parseServerInfo(getServerInfo(server)))
+		except socket.timeout:
+			continue
+	return servers
+
+
+print(getAll())
+
+
+
 
