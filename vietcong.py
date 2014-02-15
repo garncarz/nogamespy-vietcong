@@ -29,7 +29,6 @@ def parseServersList(file):
 		"country": 8,
 		"version": 9,
 		"mode": 12,
-		"players": 13,
 		"maxplayers": 14,
 		"hradba": 6 }
 
@@ -129,14 +128,17 @@ def createTables():
 
 
 def saveServers(servers):
+	db.set_autocommit(False)
 	Server.delete().execute()
 	for server in servers:
 		serverDb = Server(**server)
 		serverDb.save()
-		for player in server["players"]:
-			playerDb = Player(**player)
-			playerDb.server = serverDb
-			playerDb.save()
+		if "players" in server:
+			for player in server["players"]:
+				playerDb = Player(**player)
+				playerDb.server = serverDb
+				playerDb.save()
+	db.commit()
 
 
 ################################################################################
