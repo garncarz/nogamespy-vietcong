@@ -5,6 +5,11 @@ from urllib.request import urlopen
 from lxml import etree
 import socket
 import re
+from peewee import *
+import configparser
+
+################################################################################
+## DATA RETRIEVAL:
 
 def getServersListFile():
 	return urlopen("http://gstadmin.gamespy.net/masterserver/" + \
@@ -19,7 +24,7 @@ def parseServersList(file):
 		"ip": 0,
 		"infoport": 1,
 		"name": 10,
-		"map": 11,
+		"mapname": 11,
 		"password": 7,
 		"country": 8,
 		"version": 9,
@@ -51,21 +56,19 @@ def parseServerInfo(data):
 	arr = re.split("\\\\", data)[1:-4]
 	return dict(zip(arr[::2], arr[1::2]))
 
+
 def mergeServerInfo(server, serverInfo):
-	server["port"] = serverInfo["hostport"]
-	server["dedic"] = True if "dedic" in serverInfo else False
-	server["vietnam"] = True if "vietnam" in serverInfo else False
+	server["port"] = int(serverInfo["hostport"])
+	server["dedic"] = "dedic" in serverInfo
+	server["vietnam"] = "vietnam" in serverInfo
 	
-	columns = {
-		"name": "player",
-		"ping": "ping",
-		"frags": "frags" }
 	players = []
 	for i in range(int(serverInfo["numplayers"])):
 		try:
 			player = {}
-			for column, columnInfo in columns.items():
-				player[column] = serverInfo[columnInfo + "_" + str(i)]
+			player["name"] = serverInfo["player_" + str(i)]
+			player["ping"] = int(serverInfo["ping_" + str(i)])
+			player["frags"] = int(serverInfo["frags_" + str(i)])
 			players.append(player)
 		except KeyError:
 			break
@@ -82,8 +85,64 @@ def getAll():
 	return servers
 
 
-print(getAll())
+################################################################################
+## LOCAL DATABASE:
+
+config = configparser.ConfigParser()
+config.read("vietcong.ini")
+db = MySQLDatabase("vietcong", **config["db"])
+db.connect()
+
+class BaseModel(Model):
+	class Meta:
+		database = db
+
+class Server(BaseModel):
+	ip = CharField()
+	port = IntegerField(null = True)
+	
+	name = CharField()
+	mapname = CharField()
+	mode = CharField()
+	country = CharField(null = True)
+	
+	version = CharField()
+	hradba = CharField(null = True)
+	maxplayers = IntegerField()
+	
+	password = BooleanField(null = True)
+	dedic = BooleanField(null = True)
+	vietnam = BooleanField(null = True)
 
 
+class Player(BaseModel):
+	name = CharField()
+	ping = IntegerField()
+	frags = IntegerField()
+	
+	server = ForeignKeyField(Server, related_name = "players",
+		on_update = "cascade", on_delete = "cascade")
+
+def createTables():
+	Server.create_table()
+	Player.create_table()
+
+
+def saveServers(servers):
+	Server.delete().execute()
+	for server in servers:
+		serverDb = Server(**server)
+		serverDb.save()
+		for player in server["players"]:
+			playerDb = Player(**player)
+			playerDb.server = serverDb
+			playerDb.save()
+
+
+################################################################################
+## RUN:
+
+servers = getAll()
+saveServers(servers)
 
 
