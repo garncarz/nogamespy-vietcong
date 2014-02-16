@@ -29,6 +29,7 @@ def parseServersList(file):
 		"country": 8,
 		"version": 9,
 		"mode": 12,
+		"numplayers": 13,
 		"maxplayers": 14,
 		"hradba": 6 }
 
@@ -48,8 +49,8 @@ def getServerInfo(server):
 	conn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 	conn.settimeout(2)
 	conn.connect((server["ip"], server["infoport"]))
-	conn.send("\\status\\players\\".encode("utf-8"))
-	return conn.recv(4096).decode("utf-8")
+	conn.send("\\status\\players\\".encode("latin1"))
+	return conn.recv(4096).decode("latin1")
 
 def parseServerInfo(data):
 	arr = re.split("\\\\", data)[1:-4]
@@ -79,7 +80,7 @@ def getAll():
 	for server in servers:
 		try:
 			mergeServerInfo(server, parseServerInfo(getServerInfo(server)))
-		except socket.timeout:
+		except OSError:
 			continue
 	return servers
 
@@ -107,6 +108,7 @@ class Server(BaseModel):
 	
 	version = CharField()
 	hradba = CharField(null = True)
+	numplayers = IntegerField()
 	maxplayers = IntegerField()
 	
 	password = BooleanField(null = True)
