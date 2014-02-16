@@ -40,6 +40,8 @@ def parseServersList(file):
 			value = row[order].text
 			if value and value.isdigit(): value = int(value)
 			server[column] = value
+		server["version"] = (lambda v: v[0] + "." + v[1:]) \
+			(str(server["version"]))
 		servers.append(server)
 	
 	return servers
@@ -80,8 +82,8 @@ def getAll():
 	for server in servers:
 		try:
 			mergeServerInfo(server, parseServerInfo(getServerInfo(server)))
-		except OSError:
-			continue
+		except Exception:
+			servers.remove(server)
 	return servers
 
 
