@@ -6,7 +6,11 @@ from lxml import etree
 import socket
 import re
 from peewee import *
+from datetime import datetime
 import configparser
+
+iniFile = "vietcong.ini"
+udpTimeout = 4
 
 ################################################################################
 ## DATA RETRIEVAL:
@@ -48,11 +52,11 @@ def parseServersList(file):
 
 
 def getServerInfo(server):
-	conn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-	conn.settimeout(2)
-	conn.connect((server["ip"], server["infoport"]))
-	conn.send("\\status\\players\\".encode("latin1"))
-	return conn.recv(4096).decode("latin1")
+	udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	udp.settimeout(udpTimeout)
+	udp.connect((server["ip"], server["infoport"]))
+	udp.send("\\status\\players\\".encode("latin1"))
+	return udp.recv(4096).decode("latin1")
 
 def parseServerInfo(data):
 	arr = re.split("\\\\", data)[1:-4]
@@ -83,15 +87,15 @@ def getAll():
 		try:
 			mergeServerInfo(server, parseServerInfo(getServerInfo(server)))
 		except Exception:
-			servers.remove(server)
-	return servers
+			server["error"] = True
+	return list(filter(lambda s: not "error" in s, servers))
 
 
 ################################################################################
 ## LOCAL DATABASE:
 
 config = configparser.ConfigParser()
-config.read("vietcong.ini")
+config.read(iniFile)
 db = MySQLDatabase("vietcong", **config["db"])
 db.connect()
 
@@ -101,7 +105,7 @@ class BaseModel(Model):
 
 class Server(BaseModel):
 	ip = CharField()
-	port = IntegerField(null = True)
+	port = IntegerField()
 	
 	name = CharField()
 	mapname = CharField()
@@ -116,6 +120,9 @@ class Server(BaseModel):
 	password = BooleanField(null = True)
 	dedic = BooleanField(null = True)
 	vietnam = BooleanField(null = True)
+	
+	online = BooleanField(default = True)
+	onlineSince = DateTimeField(default = datetime.now)
 
 
 class Player(BaseModel):
@@ -125,30 +132,54 @@ class Player(BaseModel):
 	
 	server = ForeignKeyField(Server, related_name = "players",
 		on_update = "cascade", on_delete = "cascade")
+	
+	online = BooleanField(default = True)
+	onlineSince = DateTimeField(default = datetime.now)
 
-def createTables():
-	Server.create_table()
-	Player.create_table()
+Server.create_table(True)
+Player.create_table(True)
 
 
 def saveServers(servers):
 	db.set_autocommit(False)
-	Server.delete().execute()
+	Server.update(online = False).execute()
+	Player.update(online = False).execute()
+	
 	for server in servers:
-		serverDb = Server(**server)
+		try:
+			serverDb = Server.get((Server.ip == server["ip"]) &
+				(Server.port == server["port"]))
+			serverDb.online = True
+			serverDb.mapname = server["mapname"]
+			serverDb.mode = server["mode"]
+			serverDb.numplayers = server["numplayers"]
+			serverDb.maxplayers = server["maxplayers"]
+			serverDb.password = server["password"]
+			serverDb.vietnam = server["vietnam"]
+		except Server.DoesNotExist:
+			serverDb = Server(**server)
 		serverDb.save()
 		if "players" in server:
 			for player in server["players"]:
-				playerDb = Player(**player)
-				playerDb.server = serverDb
+				try:
+					playerDb = Player.get((Player.server == serverDb) &
+						(Player.name == player["name"]) &
+						(Player.online == False))
+					playerDb.online = True
+					playerDb.frags = player["frags"]
+					playerDb.ping = player["ping"]
+				except Player.DoesNotExist:
+					playerDb = Player(server = serverDb, **player)
 				playerDb.save()
+	
+	Server.delete().where(Server.online == False).execute()
+	Player.delete().where(Player.online == False).execute()
 	db.commit()
 
 
 ################################################################################
 ## RUN:
 
-servers = getAll()
-saveServers(servers)
-
-
+if __name__ == "__main__":
+	servers = getAll()
+	saveServers(servers)
