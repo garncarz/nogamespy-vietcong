@@ -46,6 +46,7 @@ def parseServersList(file):
 			server[column] = value
 		server["version"] = (lambda v: v[0] + "." + v[1:]) \
 			(str(server["version"]))
+		server["country"] = server["country"].lower()
 		servers.append(server)
 	
 	return servers
@@ -65,6 +66,7 @@ def parseServerInfo(data):
 
 def mergeServerInfo(server, serverInfo):
 	server["port"] = int(serverInfo["hostport"])
+	server["password"] = "password" in serverInfo
 	server["dedic"] = "dedic" in serverInfo
 	server["vietnam"] = "vietnam" in serverInfo
 	
@@ -79,6 +81,7 @@ def mergeServerInfo(server, serverInfo):
 		except KeyError:
 			break
 	server["players"] = players
+	server["numplayers"] = len(players)
 
 
 def getAll():
