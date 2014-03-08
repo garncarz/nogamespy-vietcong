@@ -18,12 +18,10 @@ udpTimeout = 4
 
 geoip = pygeoip.GeoIP("/usr/share/GeoIP/GeoIP.dat")
 
-def getServersListFile():
-	return urlopen(
+def getGameSpyList():
+	source = urlopen(
 		"http://gstadmin.gamespy.net/masterserver/?gamename=vietcong")
-
-def parseServersList(file):
-	tree = etree.parse(file, parser = etree.HTMLParser())
+	tree = etree.parse(source, parser = etree.HTMLParser())
 	rows = tree.xpath("/html/body/form/table/tr")[1:]
 
 	servers = []
@@ -38,9 +36,7 @@ def getServerInfo(server):
 	udp.settimeout(udpTimeout)
 	udp.connect((server["ip"], server["infoport"]))
 	udp.send("\\status\\players\\".encode("latin1"))
-	return udp.recv(4096).decode("latin1")
-
-def parseServerInfo(data):
+	data = udp.recv(4096).decode("latin1")
 	arr = re.split("\\\\", data)[1:-4]
 	return dict(zip(arr[::2], arr[1::2]))
 
@@ -52,6 +48,7 @@ def mergeServerInfo(server, serverInfo):
 	server["vietnam"] = "vietnam" in serverInfo
 	
 	server["country"] = geoip.country_code_by_addr(server["ip"])
+	server["countryname"] = geoip.country_name_by_addr(server["ip"])
 	
 	server["name"] = serverInfo["hostname"]
 	server["mode"] = serverInfo["gametype"]
@@ -78,10 +75,10 @@ def mergeServerInfo(server, serverInfo):
 
 
 def getAll():
-	servers = parseServersList(getServersListFile())
+	servers = getGameSpyList()
 	for server in servers:
 		try:
-			mergeServerInfo(server, parseServerInfo(getServerInfo(server)))
+			mergeServerInfo(server, getServerInfo(server))
 		except Exception:
 			server["error"] = True
 	return list(filter(lambda s: not "error" in s, servers))
@@ -108,6 +105,7 @@ class Server(BaseModel):
 	mapname = CharField()
 	mode = CharField()
 	country = CharField(null = True)
+	countryname = CharField(null = True)
 	
 	version = CharField()
 	hradba = CharField(null = True)
