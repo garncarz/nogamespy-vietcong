@@ -5,6 +5,7 @@ from urllib.request import urlopen
 from lxml import etree
 import socket
 import re
+import pygeoip
 from peewee import *
 from datetime import datetime, timedelta
 import configparser
@@ -15,28 +16,19 @@ udpTimeout = 4
 ################################################################################
 ## DATA RETRIEVAL:
 
+geoip = pygeoip.GeoIP("/usr/share/GeoIP/GeoIP.dat")
+
 def getServersListFile():
-	return urlopen("http://gstadmin.gamespy.net/masterserver/" + \
-		"?gamename=vietcong&fields=\\country")
+	return urlopen(
+		"http://gstadmin.gamespy.net/masterserver/?gamename=vietcong")
 
 def parseServersList(file):
 	tree = etree.parse(file, parser = etree.HTMLParser())
 	rows = tree.xpath("/html/body/form/table/tr")[1:]
-	
-	columns = {
-		"ip": 0,
-		"infoport": 1,
-		"country": 6 }
 
 	servers = []
 	for row in rows:
-		server = {}
-		for column, order in columns.items():
-			value = row[order].text
-			if value and value.isdigit(): value = int(value)
-			server[column] = value
-		server["country"] = server["country"].lower()
-		servers.append(server)
+		servers.append({"ip": row[0].text, "infoport": int(row[1].text)})
 	
 	return servers
 
@@ -58,6 +50,8 @@ def mergeServerInfo(server, serverInfo):
 	server["password"] = "password" in serverInfo
 	server["dedic"] = "dedic" in serverInfo
 	server["vietnam"] = "vietnam" in serverInfo
+	
+	server["country"] = geoip.country_code_by_addr(server["ip"])
 	
 	server["name"] = serverInfo["hostname"]
 	server["mode"] = serverInfo["gametype"]
