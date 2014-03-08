@@ -6,7 +6,7 @@ from lxml import etree
 import socket
 import re
 from peewee import *
-from datetime import datetime
+from datetime import datetime, timedelta
 import configparser
 
 iniFile = "vietcong.ini"
@@ -17,8 +17,7 @@ udpTimeout = 4
 
 def getServersListFile():
 	return urlopen("http://gstadmin.gamespy.net/masterserver/" + \
-		"?gamename=vietcong&fields=\\hbver\\password\\country\\uver" + \
-		"\\hostname\\mapname\\gametype\\numplayers\\maxplayers")
+		"?gamename=vietcong&fields=\\country")
 
 def parseServersList(file):
 	tree = etree.parse(file, parser = etree.HTMLParser())
@@ -27,15 +26,7 @@ def parseServersList(file):
 	columns = {
 		"ip": 0,
 		"infoport": 1,
-		"name": 10,
-		"mapname": 11,
-		"password": 7,
-		"country": 8,
-		"version": 9,
-		"mode": 12,
-		"numplayers": 13,
-		"maxplayers": 14,
-		"hradba": 6 }
+		"country": 6 }
 
 	servers = []
 	for row in rows:
@@ -44,8 +35,6 @@ def parseServersList(file):
 			value = row[order].text
 			if value and value.isdigit(): value = int(value)
 			server[column] = value
-		server["version"] = (lambda v: v[0] + "." + v[1:]) \
-			(str(server["version"]))
 		server["country"] = server["country"].lower()
 		servers.append(server)
 	
@@ -69,6 +58,16 @@ def mergeServerInfo(server, serverInfo):
 	server["password"] = "password" in serverInfo
 	server["dedic"] = "dedic" in serverInfo
 	server["vietnam"] = "vietnam" in serverInfo
+	
+	server["name"] = serverInfo["hostname"]
+	server["mode"] = serverInfo["gametype"]
+	server["mapname"] = serverInfo["mapname"]
+	server["version"] = serverInfo["uver"]
+	server["version"] = (lambda v: v[0] + "." + v[1:]) \
+			(str(server["version"]))
+	server["maxplayers"] = serverInfo["maxplayers"]
+	if "hbver" in serverInfo:
+		server["hradba"] = serverInfo["hbver"]
 	
 	players = []
 	for i in range(int(serverInfo["numplayers"])):
@@ -108,6 +107,7 @@ class BaseModel(Model):
 
 class Server(BaseModel):
 	ip = CharField()
+	infoport = IntegerField()
 	port = IntegerField()
 	
 	name = CharField()
@@ -126,6 +126,7 @@ class Server(BaseModel):
 	
 	online = BooleanField(default = True)
 	onlineSince = DateTimeField(default = datetime.now)
+	offlineSince = DateTimeField(null = True)
 
 
 class Player(BaseModel):
@@ -153,6 +154,7 @@ def saveServers(servers):
 			serverDb = Server.get((Server.ip == server["ip"]) &
 				(Server.port == server["port"]))
 			serverDb.online = True
+			serverDb.offlineSince = None
 			serverDb.mapname = server["mapname"]
 			serverDb.mode = server["mode"]
 			serverDb.numplayers = server["numplayers"]
@@ -175,7 +177,10 @@ def saveServers(servers):
 					playerDb = Player(server = serverDb, **player)
 				playerDb.save()
 	
-	Server.delete().where(Server.online == False).execute()
+	Server.update(offlineSince = datetime.now()).where((Server.online == False) &
+		(Server.offlineSince >> None)).execute()
+	Server.delete().where(datetime.now() - Server.offlineSince >
+		timedelta(hours = 1)).execute()
 	Player.delete().where(Player.online == False).execute()
 	db.commit()
 
