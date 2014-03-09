@@ -26,15 +26,21 @@ def getGameSpyList():
 
 	servers = []
 	for row in rows:
-		servers.append({"ip": row[0].text, "infoport": int(row[1].text)})
+		servers.append(Server(ip = row[0].text, infoport = int(row[1].text)))
 	
 	return servers
+
+def saveGameSpyServers(servers):
+	for server in servers:
+		if not Server.select().where(Server.ip == server.ip,
+				Server.port == server.port).exists():
+			server.save()
 
 
 def getServerInfo(server):
 	udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 	udp.settimeout(udpTimeout)
-	udp.connect((server["ip"], server["infoport"]))
+	udp.connect((server.ip, server.infoport))
 	udp.send("\\status\\players\\".encode("latin1"))
 	data = udp.recv(4096).decode("latin1")
 	arr = re.split("\\\\", data)[1:-4]
@@ -42,46 +48,51 @@ def getServerInfo(server):
 
 
 def mergeServerInfo(server, serverInfo):
-	server["port"] = int(serverInfo["hostport"])
-	server["password"] = "password" in serverInfo
-	server["dedic"] = "dedic" in serverInfo
-	server["vietnam"] = "vietnam" in serverInfo
+	server.online = True
+	server.offlineSince = None
+
+	server.port = int(serverInfo["hostport"])
+	server.password = "password" in serverInfo
+	server.dedic = "dedic" in serverInfo
+	server.vietnam = "vietnam" in serverInfo
 	
-	server["country"] = geoip.country_code_by_addr(server["ip"])
-	server["countryname"] = geoip.country_name_by_addr(server["ip"])
+	server.country = geoip.country_code_by_addr(server.ip)
+	server.countryname = geoip.country_name_by_addr(server.ip)
 	
-	server["name"] = serverInfo["hostname"]
-	server["mode"] = serverInfo["gametype"]
-	server["mapname"] = serverInfo["mapname"]
-	server["version"] = serverInfo["uver"]
-	server["version"] = (lambda v: v[0] + "." + v[1:]) \
-			(str(server["version"]))
-	server["maxplayers"] = serverInfo["maxplayers"]
+	server.name = serverInfo["hostname"]
+	server.mode = serverInfo["gametype"]
+	server.mapname = serverInfo["mapname"]
+	server.version = (lambda v: v[0] + "." + v[1:])(serverInfo["uver"])
+	server.maxplayers = serverInfo["maxplayers"]
 	if "hbver" in serverInfo:
-		server["hradba"] = serverInfo["hbver"]
+		server.hradba = serverInfo["hbver"]
 	
 	players = []
 	for i in range(int(serverInfo["numplayers"])):
 		try:
-			player = {}
-			player["name"] = serverInfo["player_" + str(i)]
-			player["ping"] = int(serverInfo["ping_" + str(i)])
-			player["frags"] = int(serverInfo["frags_" + str(i)])
+			player = Player(
+				name = serverInfo["player_" + str(i)],
+				ping = int(serverInfo["ping_" + str(i)]),
+				frags = int(serverInfo["frags_" + str(i)]))
 			players.append(player)
 		except KeyError:
 			break
-	server["players"] = players
-	server["numplayers"] = len(players)
+	server.players = players
+	server.numplayers = len(players)
+	
+	server.save()
 
 
 def getAll():
 	servers = getGameSpyList()
+	servers2 = []
 	for server in servers:
 		try:
 			mergeServerInfo(server, getServerInfo(server))
+			servers2.append(server)
 		except Exception:
-			server["error"] = True
-	return list(filter(lambda s: not "error" in s, servers))
+			pass
+	return servers2
 
 
 ################################################################################
@@ -136,6 +147,7 @@ Server.create_table(True)
 Player.create_table(True)
 
 
+# FIXME: nepřevádět do modelu, již v něm je
 def saveServers(servers):
 	db.set_autocommit(False)
 	Server.update(online = False).execute()
