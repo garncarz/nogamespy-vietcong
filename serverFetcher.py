@@ -71,9 +71,3 @@ def fetchServer(server):
 	except socket.timeout:
 		return False
 
-
-def fetchSoloServer(server):
-	db.set_autocommit(False)
-	fetchServer(server)
-	db.commit()
-

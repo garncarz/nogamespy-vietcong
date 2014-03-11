@@ -30,12 +30,12 @@ def findNew():
 	servers = listFetcher.callAluigi()
 	#servers = listFetcher.getGameSpyList()
 	listFetcher.fetchNewServers(servers)
+	db.commit()
 
 
 def refreshAll():
 	servers = Server.select()
 	
-	db.set_autocommit(False)
 	Server.update(online = False).execute()
 	Player.update(online = False).execute()
 	
@@ -57,9 +57,10 @@ def register(ip, port):
 		print("EXISTS")
 		return
 
-	if serverFetcher.fetchSoloServer(server) == False:
+	if serverFetcher.fetchServer(server) == False:
 		print("FAIL")
 		return
+	db.commit()
 	print("OK")
 
 

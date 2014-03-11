@@ -12,6 +12,6 @@ os.chdir(os.path.dirname(sys.argv[0]))
 config = configparser.ConfigParser()
 config.read("vietcong.ini")
 
-db.initialize(MySQLDatabase("vietcong", **config["db"]))
+db.initialize(MySQLDatabase("vietcong", autocommit = False, **config["db"]))
 db.connect()
 
