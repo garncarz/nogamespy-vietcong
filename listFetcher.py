@@ -32,7 +32,7 @@ def callAluigi():
 			infoport = int(row[1])), arr))
 	
 
-def saveNewServers(servers):
+def fetchNewServers(servers):
 	for server in servers:
 		if not Server.select().where(Server.ip == server.ip,
 				Server.infoport == server.infoport).exists():

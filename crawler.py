@@ -34,10 +34,11 @@ db.connect()
 ## MAIN:
 
 
-def fetchNewServers():
+def findNew():
 	servers = callAluigi()
+	#servers = getGameSpyList()
 	db.set_autocommit(False)
-	saveNewServers(servers)
+	fetchNewServers(servers)
 	db.commit()
 
 
@@ -80,7 +81,7 @@ def register(ip, port):
 if __name__ == "__main__":
 	args = parser.parse_args()
 	if args.new:
-		fetchNewServers()
+		findNew()
 	if args.refresh:
 		refreshAll()
 	if args.register:
