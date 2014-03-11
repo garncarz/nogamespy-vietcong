@@ -2,15 +2,13 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import configparser
 from datetime import datetime, timedelta
-import os, sys
 
+from init import *
 from model import *
-from listFetcher import *
-from serverFetcher import *
+import listFetcher
+import serverFetcher
 
-os.chdir(os.path.dirname(sys.argv[0]))
 
 parser = argparse.ArgumentParser(description = "VC 1 servers' info crawler")
 group = parser.add_mutually_exclusive_group(required = True)
@@ -23,23 +21,15 @@ group.add_argument("--register", metavar = ("IP", "PORT"), nargs = 2,
 group.add_argument("--recreate", action = "store_true",
 	help = "Recreate DB tables")
 
-config = configparser.ConfigParser()
-config.read("vietcong.ini")
-
-db.initialize(MySQLDatabase("vietcong", **config["db"]))
-db.connect()
-
 
 ################################################################################
 ## MAIN:
 
 
 def findNew():
-	servers = callAluigi()
-	#servers = getGameSpyList()
-	db.set_autocommit(False)
-	fetchNewServers(servers)
-	db.commit()
+	servers = listFetcher.callAluigi()
+	#servers = listFetcher.getGameSpyList()
+	listFetcher.fetchNewServers(servers)
 
 
 def refreshAll():
@@ -50,7 +40,7 @@ def refreshAll():
 	Player.update(online = False).execute()
 	
 	for server in servers:
-		fetchServer(server)
+		serverFetcher.fetchServer(server)
 	
 	Server.update(offlineSince = datetime.now()).where((Server.online == False)
 		& (Server.offlineSince >> None)).execute()
@@ -67,11 +57,9 @@ def register(ip, port):
 		print("EXISTS")
 		return
 
-	db.set_autocommit(False)
-	if fetchServer(server) == False:
+	if serverFetcher.fetchSoloServer(server) == False:
 		print("FAIL")
 		return
-	db.commit()
 	print("OK")
 
 

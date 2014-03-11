@@ -6,7 +6,7 @@ from lxml import etree
 from subprocess import *
 
 from model import *
-from serverFetcher import *
+import serverFetcher
 
 
 def getGameSpyList():
@@ -33,9 +33,10 @@ def callAluigi():
 	
 
 def fetchNewServers(servers):
+	db.set_autocommit(False)
 	for server in servers:
 		if not Server.select().where(Server.ip == server.ip,
 				Server.infoport == server.infoport).exists():
-			fetchServer(server)
-
+			serverFetcher.fetchServer(server)
+	db.commit()
 

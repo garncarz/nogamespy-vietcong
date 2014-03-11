@@ -42,6 +42,7 @@ def mergeServerInfo(server, serverInfo):
 		server.hradba = serverInfo["hbver"]
 	
 	server.save()
+	playersCount = 0
 	for i in range(int(serverInfo["numplayers"])):
 		try:
 			playerName = serverInfo["player_" + str(i)]
@@ -54,10 +55,11 @@ def mergeServerInfo(server, serverInfo):
 			player.ping = int(serverInfo["ping_" + str(i)])
 			player.frags = int(serverInfo["frags_" + str(i)])
 			player.save()
+			playersCount += 1
 		except KeyError:
 			break
 	
-	server.numplayers = server.players.count()
+	server.numplayers = playersCount
 	server.save()
 
 
@@ -68,4 +70,10 @@ def fetchServer(server):
 		return False
 	except socket.timeout:
 		return False
+
+
+def fetchSoloServer(server):
+	db.set_autocommit(False)
+	fetchServer(server)
+	db.commit()
 
