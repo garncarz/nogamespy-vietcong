@@ -4,6 +4,7 @@
 import argparse
 import configparser
 from datetime import datetime, timedelta
+import sys
 
 from model import *
 from listFetcher import *
@@ -16,6 +17,8 @@ group.add_argument("--new", action = "store_true",
 	help = "Try to find new servers")
 group.add_argument("--refresh", action = "store_true",
 	help = "Refresh info for all servers")
+group.add_argument("--register", metavar = ("IP", "PORT"), nargs = 2,
+	help = "Register new game")
 group.add_argument("--recreate", action = "store_true",
 	help = "Recreate DB tables")
 
@@ -55,6 +58,19 @@ def refreshAll():
 	db.commit()
 
 
+def register(ip, port):
+	server = Server(ip = ip, infoport = int(port))
+	if Server.select().where(Server.ip == server.ip,
+			Server.infoport == server.infoport).exists():
+		sys.exit(2)
+
+	db.set_autocommit(False)
+	if fetchServer(server) == False:
+		sys.exit(1)
+	db.commit()
+	sys.exit(0)
+
+
 ################################################################################
 ## RUN:
 
@@ -64,6 +80,8 @@ if __name__ == "__main__":
 		fetchNewServers()
 	if args.refresh:
 		refreshAll()
+	if args.register:
+		register(*args.register)
 	if args.recreate:
 		recreateTables()
 

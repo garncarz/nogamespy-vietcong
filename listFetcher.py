@@ -23,8 +23,8 @@ def getGameSpyList():
 
 
 def callAluigi():
-	with Popen(["./gslist", "-n", "vietcong"], stdout = PIPE, stderr = PIPE,
-		cwd = "/home/ondra/skola/vietcong/service/") as proc:
+	with Popen(["./gslist", "-n", "vietcong"], stdout = PIPE, stderr = PIPE) \
+			as proc:
 		output = proc.stdout.read().decode("ascii")
 		arr = [line.split() for line in output.split("\n") if line.strip()]
 		return list(map(lambda row: Server(
