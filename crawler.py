@@ -4,12 +4,13 @@
 import argparse
 import configparser
 from datetime import datetime, timedelta
-import sys
+import os, sys
 
 from model import *
 from listFetcher import *
 from serverFetcher import *
 
+os.chdir(os.path.dirname(sys.argv[0]))
 
 parser = argparse.ArgumentParser(description = "VC 1 servers' info crawler")
 group = parser.add_mutually_exclusive_group(required = True)
@@ -62,13 +63,15 @@ def register(ip, port):
 	server = Server(ip = ip, infoport = int(port))
 	if Server.select().where(Server.ip == server.ip,
 			Server.infoport == server.infoport).exists():
-		sys.exit(2)
+		print("EXISTS")
+		return
 
 	db.set_autocommit(False)
 	if fetchServer(server) == False:
-		sys.exit(1)
+		print("FAIL")
+		return
 	db.commit()
-	sys.exit(0)
+	print("OK")
 
 
 ################################################################################
