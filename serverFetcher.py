@@ -66,8 +66,6 @@ def mergeServerInfo(server, serverInfo):
 def fetchServer(server):
 	try:
 		mergeServerInfo(server, getServerInfo(server))
-	except ConnectionError:
-		return False
-	except socket.timeout:
+	except Exception:
 		return False
 
