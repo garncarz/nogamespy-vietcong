@@ -10,7 +10,7 @@ import listFetcher
 import serverFetcher
 
 
-parser = argparse.ArgumentParser(description = "VC 1 servers' info crawler")
+parser = argparse.ArgumentParser(description = "VC 1 servers info crawler")
 group = parser.add_mutually_exclusive_group(required = True)
 group.add_argument("--new", action = "store_true",
 	help = "Try to find new servers")
