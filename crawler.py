@@ -42,10 +42,11 @@ def refreshAll():
 	for server in servers:
 		serverFetcher.fetchServer(server)
 	
-	Server.update(offlineSince = datetime.now()).where((Server.online == False)
-		& (Server.offlineSince >> None)).execute()
-	Server.delete().where(datetime.now() - Server.offlineSince >
-		timedelta(hours = 1)).execute()
+	#Server.update(offlineSince = datetime.now()).where((Server.online == False)
+	#	& (Server.offlineSince >> None)).execute()
+	#Server.delete().where(datetime.now() - Server.offlineSince >
+	#	timedelta(hours = 1)).execute()
+	Server.delete().where(Server.online == False).execute()
 	Player.delete().where(Player.online == False).execute()
 	db.commit()
 

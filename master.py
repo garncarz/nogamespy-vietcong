@@ -10,8 +10,7 @@ from model import *
 import aluigi
 
 def encodeList(servers):
-	data = struct.pack("s", servers)
-	return aluigi.encodeList("bq98mE", data, len(data))
+	return aluigi.encodeList("bq98mE", memoryview(servers).tobytes())
 
 
 class MasterService(socketserver.TCPServer):
@@ -31,7 +30,7 @@ class MasterHandler(socketserver.BaseRequestHandler):
 		servers = bytearray()
 		for server in Server.select().where(Server.online == True):
 			servers.extend(socket.inet_aton(server.ip))
-			servers.extend(struct.pack("h", server.infoport))
+			servers.extend(struct.pack(">h", server.infoport))
 		
 		self.request.send(encodeList(servers))
 

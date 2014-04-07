@@ -3,16 +3,21 @@
 int enctype2_encoder(unsigned char *key, unsigned char *data, int size);
 
 static PyObject* encodeList(PyObject* self, PyObject* args) {
-	unsigned char *key, *data;
-	int size;
+	unsigned char *key, *data_arg, *data;
+	int size, ret_size;
 	
-	if (!PyArg_ParseTuple(args, "syi", &key, &data, &size)) {
+	if (!PyArg_ParseTuple(args, "ss#", &key, &data_arg, &size)) {
 		return NULL;
 	}
-	
-	enctype2_encoder(key, data, size);
-	
-	return Py_BuildValue("y", data);
+
+	data = (unsigned char*)malloc(2 * size * sizeof(unsigned char));
+	memcpy(data, data_arg, size * sizeof(unsigned char));
+
+	ret_size = enctype2_encoder(key, data, size);
+
+	PyObject* ret = Py_BuildValue("y#", data, ret_size);
+	free(data);
+	return ret;
 }
 
 static PyMethodDef aluigiMethods[] = {
@@ -24,11 +29,11 @@ static struct PyModuleDef aluigiModule = {
 	PyModuleDef_HEAD_INIT,
 	"aluigi",
 	NULL,
-	-1,
+	0,
 	aluigiMethods
 };
 
-PyMODINIT_FUNC PyInit_aluigi() {
+PyMODINIT_FUNC PyInit_aluigi(void) {
 	return PyModule_Create(&aluigiModule);
 }
 
