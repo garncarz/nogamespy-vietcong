@@ -7,6 +7,12 @@ import struct
 
 from init import *
 from model import *
+import aluigi
+
+def encodeList(servers):
+	data = struct.pack("s", servers)
+	return aluigi.encodeList("bq98mE", data, len(data))
+
 
 class MasterService(socketserver.TCPServer):
 	allow_reuse_address = True
@@ -22,11 +28,12 @@ class MasterHandler(socketserver.BaseRequestHandler):
 		line1 = self.request.recv(4096).decode("latin1")
 		line2 = self.request.recv(4096).decode("latin1")
 		
+		servers = bytearray()
 		for server in Server.select().where(Server.online == True):
-			ip = socket.inet_aton(server.ip)
-			port = struct.pack("h", server.infoport)
-			self.request.send(ip)
-			self.request.send(port)
+			servers.extend(socket.inet_aton(server.ip))
+			servers.extend(struct.pack("h", server.infoport))
+		
+		self.request.send(encodeList(servers))
 
 
 if __name__ == "__main__":
