@@ -6,7 +6,7 @@ static PyObject* encodeList(PyObject* self, PyObject* args) {
 	unsigned char *key, *data_arg, *data;
 	int size, ret_size;
 	
-	if (!PyArg_ParseTuple(args, "ss#", &key, &data_arg, &size)) {
+	if (!PyArg_ParseTuple(args, "sy#", &key, &data_arg, &size)) {
 		return NULL;
 	}
 
@@ -15,8 +15,9 @@ static PyObject* encodeList(PyObject* self, PyObject* args) {
 
 	ret_size = enctype2_encoder(key, data, size);
 
-	PyObject* ret = Py_BuildValue("y#", data, ret_size);
+	PyObject* ret = Py_BuildValue("y#", data, ret_size - 1);
 	free(data);
+	
 	return ret;
 }
 

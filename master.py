@@ -31,6 +31,8 @@ class MasterHandler(socketserver.BaseRequestHandler):
 		for server in Server.select().where(Server.online == True):
 			servers.extend(socket.inet_aton(server.ip))
 			servers.extend(struct.pack(">h", server.infoport))
+		servers.append(0x5c)
+		servers.append(0x66)
 		
 		self.request.send(encodeList(servers))
 
