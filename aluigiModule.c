@@ -1,3 +1,6 @@
+// Copyright (C) 2014 Ondřej Garncarz
+// License: AGPLv3+
+
 #include <Python.h>
 
 int enctype2_encoder(unsigned char *key, unsigned char *data, int size);
@@ -5,6 +8,7 @@ int enctype2_encoder(unsigned char *key, unsigned char *data, int size);
 static PyObject* encodeList(PyObject* self, PyObject* args) {
 	unsigned char *key, *data_arg, *data;
 	int size, ret_size;
+	PyObject *ret;
 	
 	if (!PyArg_ParseTuple(args, "sy#", &key, &data_arg, &size)) {
 		return NULL;
@@ -15,7 +19,7 @@ static PyObject* encodeList(PyObject* self, PyObject* args) {
 
 	ret_size = enctype2_encoder(key, data, size);
 
-	PyObject* ret = Py_BuildValue("y#", data, ret_size - 1);
+	ret = Py_BuildValue("y#", data, ret_size - 1);
 	free(data);
 	
 	return ret;

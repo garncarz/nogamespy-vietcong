@@ -1,5 +1,5 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+# Copyright (C) 2014 Ondřej Garncarz 
+# License: AGPLv3+
 
 from peewee import *
 from datetime import datetime

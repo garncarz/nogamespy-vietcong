@@ -1,5 +1,5 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+# Copyright (C) 2014 Ondřej Garncarz 
+# License: AGPLv3+
 
 import os, sys
 import configparser
