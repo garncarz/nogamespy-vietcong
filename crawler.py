@@ -29,8 +29,9 @@ group.add_argument("--recreate", action = "store_true",
 
 
 def findNew():
-	servers = listFetcher.callAluigi()
+	#servers = listFetcher.callAluigi()
 	#servers = listFetcher.getGameSpyList()
+	servers = listFetcher.getQtrackerList()
 	listFetcher.fetchNewServers(servers)
 	db.commit()
 

@@ -22,6 +22,16 @@ def getGameSpyList():
 	return servers
 
 
+def getQtrackerList():
+	source = urlopen("http://www.qtracker.com/server_lists/vietcong.txt")
+	lines = source.readlines()
+	arr = [str(line, encoding = "utf8").split(":")
+		for line in lines if line.strip()]
+	return list(map(lambda row: Server(
+		ip = row[0],
+		infoport = int(row[1])), arr))
+
+
 def callAluigi():
 	with Popen(["./gslist", "-n", "vietcong"], stdout = PIPE, stderr = PIPE) \
 			as proc:
