@@ -15,14 +15,27 @@ class BaseModel(Model):
 	class Meta:
 		database = db
 
+
+class Map(BaseModel):
+	name = CharField(unique = True)
+
+class Mode(BaseModel):
+	name = CharField(unique = True)
+
+class MapMode(BaseModel):
+	map = ForeignKeyField(Map)
+	mode = ForeignKeyField(Mode)
+
+
 class Server(BaseModel):
 	ip = CharField()
 	infoport = IntegerField()
 	port = IntegerField()
 	
 	name = CharField()
-	mapname = CharField()
-	mode = CharField()
+	map = ForeignKeyField(Map)
+	mode = ForeignKeyField(Mode)
+	
 	country = CharField(null = True)
 	countryname = CharField(null = True)
 	
@@ -54,8 +67,14 @@ class Player(BaseModel):
 
 def recreateTables():
 	Player.drop_table(True, True)
+	MapMode.drop_table(True, True)
+	Map.drop_table(True, True)
+	Mode.drop_table(True, True)
 	Server.drop_table(True, True)
 	
+	Map.create_table(True)
+	Mode.create_table(True)
+	MapMode.create_table(True)
 	Server.create_table(True)
 	Player.create_table(True)
 

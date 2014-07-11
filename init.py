@@ -6,8 +6,8 @@ import configparser
 
 from model import *
 
-
-os.chdir(os.path.dirname(sys.argv[0]))
+if sys.argv[0]:
+	os.chdir(os.path.dirname(sys.argv[0]))
 
 config = configparser.ConfigParser()
 config.read("vietcong.ini")
