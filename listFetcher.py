@@ -23,7 +23,7 @@ def getGameSpyList():
 
 
 def getQtrackerList():
-	source = urlopen("http://www.qtracker.com/server_lists/vietcong.txt")
+	source = urlopen("http://www.qtracker.com/server_list_details.php?game=vietcong")
 	lines = source.readlines()
 	arr = [str(line, encoding = "utf8").split(":")
 		for line in lines if line.strip()]
