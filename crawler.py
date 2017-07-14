@@ -1,6 +1,6 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
-# Copyright (C) 2014 Ondřej Garncarz 
+# Copyright (C) 2014 Ondřej Garncarz
 # License: AGPLv3+
 
 import argparse
@@ -38,13 +38,13 @@ def findNew():
 
 def refreshAll():
 	servers = Server.select()
-	
+
 	Server.update(online = False).execute()
 	Player.update(online = False).execute()
-	
+
 	for server in servers:
 		serverFetcher.fetchServer(server)
-	
+
 	#Server.update(offlineSince = datetime.now()).where((Server.online == False)
 	#	& (Server.offlineSince >> None)).execute()
 	#Server.delete().where(datetime.now() - Server.offlineSince >

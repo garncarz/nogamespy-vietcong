@@ -1,6 +1,6 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
-# Copyright (C) 2014 Ondřej Garncarz 
+# Copyright (C) 2014 Ondřej Garncarz
 # License: AGPLv3+
 
 import socketserver
@@ -10,7 +10,7 @@ import crawler
 
 class HeartbeatService(socketserver.UDPServer):
 	allow_reuse_address = True
-	
+
 	def __init__(self):
 		super().__init__(("", 27900), HeartbeatHandler)
 

@@ -1,6 +1,6 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
-# Copyright (C) 2014 Ondřej Garncarz 
+# Copyright (C) 2014 Ondřej Garncarz
 # License: AGPLv3+
 
 from distutils.core import setup, Extension
