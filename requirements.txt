@@ -1,1 +1,3 @@
-PyMySQL
+alembic
+psycopg2
+sqlalchemy
