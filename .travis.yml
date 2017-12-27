@@ -5,5 +5,8 @@ services:
   - postgresql
 install:
   - pip install -r requirements.txt
+  - pip install coveralls
 script:
   ./test.sh
+after_success:
+  coveralls

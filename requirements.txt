@@ -6,3 +6,4 @@ sqlalchemy
 factory-boy
 fake-factory==0.7.4
 pytest
+pytest-cov
