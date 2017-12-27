@@ -1,4 +1,5 @@
 settings_local.py
+conftest_local.py
 
 nohup.out
 vietcong.ini

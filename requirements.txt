@@ -1,3 +1,8 @@
 alembic
 psycopg2
 sqlalchemy
+
+# testing:
+factory-boy
+fake-factory==0.7.4
+pytest
