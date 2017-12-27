@@ -4,7 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 from . import settings
 
-engine = create_engine(
+db_engine = create_engine(
     settings.DATABASE,
     convert_unicode=True,
 )
@@ -12,7 +12,7 @@ engine = create_engine(
 db_session = scoped_session(
     sessionmaker(autocommit=False,
                  autoflush=False,
-                 bind=engine),
+                 bind=db_engine),
 )
 
 Base = declarative_base()
