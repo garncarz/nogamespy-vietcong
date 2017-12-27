@@ -1,7 +1,28 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime, func
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import ClauseElement
 
-from .database import Base
+from .database import Base, db_session
+
+
+# https://gist.github.com/codeb2cc/3302754
+def get_or_create(_model, _session=db_session, _defaults={}, **kwargs):
+    query = _session.query(_model).filter_by(**kwargs)
+
+    instance = query.first()
+
+    if instance:
+        return instance, False
+    else:
+        params = dict((k, v) for k, v in kwargs.items()
+                      if not isinstance(v, ClauseElement))
+        params.update(_defaults)
+        instance = _model(**params)
+
+        db_session.add(instance)
+        db_session.commit()
+
+        return instance, True
 
 
 class Map(Base):
@@ -55,6 +76,9 @@ class Server(Base):
     offline_since = Column(DateTime)
 
     players = relationship('Player', back_populates='server')
+
+    def __repr__(self):
+        return f'<Server ip={self.ip} info_port={self.info_port} name={self.name}>'
 
 
 class Player(Base):
