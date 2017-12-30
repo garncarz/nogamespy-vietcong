@@ -30,6 +30,8 @@ def pull_master():
 
 
 def _get_server_info(server):
+    logger.debug(f'Trying to get info from {server.ip}:{server.info_port}...')
+
     udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     udp.settimeout(settings.UDP_TIMEOUT)
     udp.connect((server.ip, int(server.info_port)))
@@ -59,7 +61,7 @@ def _merge_players_info(server, info):
     for i in range(int(info['numplayers'])):
         try:
             player_name = info['player_' + str(i)]
-            player = models.get_or_create(models.Player, server=server, name=player_name, online=False)
+            player, _ = models.get_or_create(models.Player, server=server, name=player_name, online=False)
 
             player.online = True
             player.ping = int(info['ping_' + str(i)])
@@ -106,9 +108,27 @@ def pull_server_info(server):
 
     assert isinstance(server, models.Server)
 
-    info = _get_server_info(server)
+    logger.debug(f'Pulling info for {server}...')
 
-    db_session.add(server)
-    _merge_server_info(server, info)
+    try:
+        info = _get_server_info(server)
 
+        db_session.add(server)
+        _merge_server_info(server, info)
+
+        db_session.commit()
+
+        logger.debug(f'Pulled info for {server}')
+    except socket.timeout:
+        logger.debug(f'{server}: UDP timeout')
+
+
+def refresh_all_servers():
+    logger.debug(f'Refreshing info for all saved servers...')
+
+    models.Server.query.update({'online': False})
+    models.Player.query.update({'online': False})
     db_session.commit()
+
+    for server in models.Server.query.all():
+        pull_server_info(server)
