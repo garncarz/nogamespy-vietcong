@@ -1,5 +1,6 @@
 alembic
 psycopg2
+pygeoip
 requests
 sqlalchemy
 
