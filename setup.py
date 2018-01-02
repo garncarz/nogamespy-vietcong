@@ -1,11 +1,16 @@
-#!/usr/bin/env python
-
-# Copyright (C) 2014 Ondřej Garncarz
-# License: AGPLv3+
+#!/usr/bin/env python3
 
 from distutils.core import setup, Extension
 
-setup(name = "vietcong_aluigi", ext_modules = [
-	Extension("aluigi", ["aluigiModule.c",
-		"enctype2_decoder.c", "enctype_shared.c"])])
-
+setup(
+    name='nogamespy',
+    ext_modules=[
+        Extension(
+            'aluigi',
+            ['aluigi/aluigiModule.c',
+             'aluigi/enctype2_decoder.c',
+             'aluigi/enctype_shared.c',
+             ],
+        )
+    ],
+)

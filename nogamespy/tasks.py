@@ -5,7 +5,7 @@ import socket
 import pygeoip
 import requests
 
-from . import models, settings
+from . import models, protocol, settings
 from .database import db_session
 
 logger = logging.getLogger(__name__)
@@ -132,3 +132,13 @@ def refresh_all_servers():
 
     for server in models.Server.query.all():
         pull_server_info(server)
+
+
+def run_master_server():
+    logger.info('Running master server...')
+    server = protocol.MasterService()
+
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        server.shutdown()
