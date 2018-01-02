@@ -13,6 +13,8 @@ Needed: Python 3
 
 `pip install -r requirements.txt`
 
+`./setup.py build`
+
 
 ## Development
 
