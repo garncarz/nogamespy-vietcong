@@ -28,8 +28,10 @@ class MasterHandler(socketserver.BaseRequestHandler):
         logger.debug(f'Responding to {self.request.getpeername()[0]}...')
 
         self.request.sendall('\\basic\\\\secure\\'.encode('latin1'))
-        line1 = self.request.recv(4096).decode('latin1')
-        line2 = self.request.recv(4096).decode('latin1')
+
+        # TODO those lines don't appear to be received... delete?
+        # line1 = self.request.recv(4096).decode('latin1')
+        # line2 = self.request.recv(4096).decode('latin1')
 
         # TODO cache for some small amount of time
         servers = bytearray()

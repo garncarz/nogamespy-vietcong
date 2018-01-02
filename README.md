@@ -16,6 +16,12 @@ Needed: Python 3
 `./setup.py build`
 
 
+## Usage
+
+`PYTHONPATH=build/lib.linux-x86_64-3.6 ./app.py --help`
+(the exact `lib*` subdirectory name depends on the version of Python)
+
+
 ## Development
 
 `./test.sh` (runs tests and also generates a coverage)
