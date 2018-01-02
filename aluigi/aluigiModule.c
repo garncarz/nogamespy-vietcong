@@ -14,7 +14,7 @@ static PyObject* encodeList(PyObject* self, PyObject* args) {
 		return NULL;
 	}
 
-	data = (unsigned char*)malloc(2 * size * sizeof(unsigned char));
+	data = (unsigned char*)malloc(2 * size * sizeof(unsigned char) + 1 + 8 + 6);
 	memcpy(data, data_arg, size * sizeof(unsigned char));
 
 	ret_size = enctype2_encoder(key, data, size);

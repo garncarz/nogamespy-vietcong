@@ -29,16 +29,13 @@ class MasterHandler(socketserver.BaseRequestHandler):
 
         self.request.sendall('\\basic\\\\secure\\'.encode('latin1'))
 
-        # TODO those lines don't appear to be received... delete?
-        # line1 = self.request.recv(4096).decode('latin1')
-        # line2 = self.request.recv(4096).decode('latin1')
-
         # TODO cache for some small amount of time
         servers = bytearray()
+
         for server in models.Server.query.filter_by(online=True).all():
             servers.extend(socket.inet_aton(server.ip))
             servers.extend(struct.pack('>h', server.info_port))
-        servers.append(0x5c)
-        servers.append(0x66)
+
+        servers.extend(b'\\final\\')
 
         self.request.send(_encode_list(servers))
