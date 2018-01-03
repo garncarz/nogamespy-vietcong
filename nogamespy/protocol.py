@@ -10,8 +10,20 @@ from . import models, settings
 logger = logging.getLogger(__name__)
 
 
-def _encode_list(servers):
-    return aluigi.encodeList('bq98mE', memoryview(servers).tobytes())
+def encode_list(decrypted):
+    return aluigi.encode_list(settings.GAMESPY_KEY, memoryview(decrypted).tobytes())
+
+
+def decode_list(encrypted):
+    decrypted = aluigi.decode_list(settings.GAMESPY_KEY, encrypted)
+
+    for i in range(0, len(decrypted) - 1, 6):
+        if decrypted[i:].startswith(b'\\final'):
+            break
+
+        ip = socket.inet_ntoa(decrypted[i:i+4])
+        port = struct.unpack('>h', decrypted[i+4:i+6])[0]
+        yield ip, port
 
 
 class MasterService(socketserver.TCPServer):
@@ -30,12 +42,13 @@ class MasterHandler(socketserver.BaseRequestHandler):
         self.request.sendall('\\basic\\\\secure\\'.encode('latin1'))
 
         # TODO cache for some small amount of time
-        servers = bytearray()
+        byte_string = bytearray()
 
         for server in models.Server.query.filter_by(online=True).all():
-            servers.extend(socket.inet_aton(server.ip))
-            servers.extend(struct.pack('>h', server.info_port))
+            # TODO move byte schema to encode_list
+            byte_string.extend(socket.inet_aton(server.ip))
+            byte_string.extend(struct.pack('>h', server.info_port))
 
-        servers.extend(b'\\final\\')
+        byte_string.extend(b'\\final\\')
 
-        self.request.send(_encode_list(servers))
+        self.request.send(encode_list(byte_string))

@@ -1,4 +1,5 @@
 import socket
+import time
 import threading
 
 from nogamespy import protocol, settings
@@ -21,12 +22,21 @@ def test_master_server():
     client = socket.create_connection(('127.0.0.1', settings.MASTER_PORT))
 
     client.send(b'pls')
+    time.sleep(0.1)
 
-    resp = client.recv(4096).decode('latin1')
-    assert resp  # TODO be more precise
+    resp = client.recv(4096)
+    assert resp == b"\\basic\\\\secure\\\xe4bq98mE\x00\x00\xac~\xcd#]k\xc3'\xdeI[\xa4t\xc40\r\xf0v\xda\x86\x06^0\xdc"
 
     client.close()
 
     master_server.shutdown()
     master_server.server_close()
     master_thread.join()
+
+
+def test_decode_list():
+    encrypted = b"\xe4bq98mE\x00\x00\xac~\xcd#]k\xc3'\xdeI[\xa4t\xc40\r\xf0v\xda\x86\x06^0\xdc"
+    assert list(protocol.decode_list(encrypted)) == [
+        ('1.2.3.4', 15425),
+        ('5.6.7.10', 15426),
+    ]

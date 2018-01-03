@@ -4,8 +4,9 @@
 #include <Python.h>
 
 int enctype2_encoder(unsigned char *key, unsigned char *data, int size);
+unsigned char *enctype2_decoder(unsigned char *key, unsigned char *data, int *size);
 
-static PyObject* encodeList(PyObject* self, PyObject* args) {
+static PyObject* encode_list(PyObject* self, PyObject* args) {
 	unsigned char *key, *data_arg, *data;
 	int size, ret_size;
 	PyObject *ret;
@@ -25,8 +26,32 @@ static PyObject* encodeList(PyObject* self, PyObject* args) {
 	return ret;
 }
 
+static PyObject* decode_list(PyObject* self, PyObject* args) {
+	unsigned char *key, *data_arg, *data, *data_ret;
+	int size_arg, size;
+	PyObject *ret;
+
+	if (!PyArg_ParseTuple(args, "sy#", &key, &data_arg, &size_arg)) {
+		return NULL;
+	}
+
+	size = size_arg;
+
+	data = (unsigned char*)malloc(2 * size * sizeof(unsigned char));
+	memcpy(data, data_arg, size * sizeof(unsigned char));
+
+	data_ret = enctype2_decoder(key, data, &size);
+
+	ret = Py_BuildValue("y#", data_ret, size);
+	free(data);
+	// free(data_ret); leads to "invalid pointer"
+
+	return ret;
+}
+
 static PyMethodDef aluigiMethods[] = {
-	{"encodeList", encodeList, METH_VARARGS},
+	{"encode_list", encode_list, METH_VARARGS},
+	{"decode_list", decode_list, METH_VARARGS},
 	{NULL, NULL}
 };
 

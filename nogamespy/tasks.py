@@ -14,14 +14,36 @@ geoip = pygeoip.GeoIP('/usr/share/GeoIP/GeoIP.dat')
 
 
 def _get_qtracker_list():
+    logger.debug('Fetching new servers from Qtracker...')
+
     resp = requests.get('http://www.qtracker.com/server_list_details.php?game=vietcong')
     for line in resp.text.splitlines():
         ip, port = line.split(':')
         yield ip, port
 
 
-def pull_master():
-    for ip, port in _get_qtracker_list():
+def _fetch_from_master(ip):
+    logger.debug(f'Fetching new servers from {ip}...')
+
+    client = socket.create_connection((ip, settings.MASTER_PORT))
+
+    client.recv(4096)
+
+    client.send(b'\\gamename\\vietcong\\gamever\\2\\location\\0\\validate\\JOzySo8c\\enctype\\2\\final\\'
+                b'\\queryid\\1.1\\\\list\\cmp\\gamename\\vietcong\\final\\')
+
+    resp = client.recv(4096)
+    servers = protocol.decode_list(resp)
+
+    client.close()
+
+    return servers
+
+
+def pull_master(source=None):
+    servers = _get_qtracker_list() if not source else _fetch_from_master(source)
+
+    for ip, port in servers:
         server, created = models.get_or_create(models.Server, ip=ip, info_port=port)
 
         if created:
@@ -29,6 +51,7 @@ def pull_master():
             pull_server_info(server)
 
 
+# TODO move to protocol.py
 def _get_server_info(server):
     logger.debug(f'Trying to get info from {server.ip}:{server.info_port}...')
 
