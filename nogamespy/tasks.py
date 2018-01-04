@@ -22,6 +22,7 @@ def _get_qtracker_list():
         yield ip, port
 
 
+# TODO move to protocol.py
 def _fetch_from_master(ip):
     logger.debug(f'Fetching new servers from {ip}...')
 
