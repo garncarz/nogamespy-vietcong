@@ -44,11 +44,7 @@ def pull_master(source=None):
     servers = _get_qtracker_list() if not source else _fetch_from_master(source)
 
     for ip, port in servers:
-        server, created = models.get_or_create(models.Server, ip=ip, info_port=port)
-
-        if created:
-            logger.info(f'New server: {server}')
-            pull_server_info(server)
+        register(ip, port)
 
 
 # TODO move to protocol.py
@@ -142,8 +138,11 @@ def pull_server_info(server):
         db_session.commit()
 
         logger.debug(f'Pulled info for {server}')
+        return True
+
     except socket.timeout:
         logger.debug(f'{server}: UDP timeout')
+        return False
 
 
 def refresh_all_servers():
@@ -157,9 +156,45 @@ def refresh_all_servers():
         pull_server_info(server)
 
 
+def register(ip, port, print_it=False):
+    logger.debug(f'Trying to register {ip}:{port}...')
+
+    server, created = models.get_or_create(models.Server, ip=ip, info_port=port)
+
+    if not created:
+        if print_it:
+            print('EXISTS')
+        return True
+
+    else:
+        if pull_server_info(server):
+            logger.info(f'New server: {server}')
+            if print_it:
+                print('OK')
+            return True
+
+        else:
+            if print_it:
+                print('FAIL')
+
+            db_session.delete(server)
+            db_session.commit()
+            return False
+
+
 def run_master_server():
     logger.info('Running master server...')
     server = protocol.MasterService()
+
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        server.shutdown()
+
+
+def run_heartbeat_server():
+    logger.info('Running heartbeat server...')
+    server = protocol.HeartbeatService()
 
     try:
         server.serve_forever()

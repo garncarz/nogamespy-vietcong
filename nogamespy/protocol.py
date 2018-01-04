@@ -4,7 +4,7 @@ import socketserver
 import struct
 
 import aluigi
-from . import models, settings
+from . import models, tasks, settings
 
 
 logger = logging.getLogger(__name__)
@@ -52,3 +52,24 @@ class MasterHandler(socketserver.BaseRequestHandler):
         byte_string.extend(b'\\final\\')
 
         self.request.send(encode_list(byte_string))
+
+
+class HeartbeatService(socketserver.UDPServer):
+
+    allow_reuse_address = True
+
+    def __init__(self):
+        super().__init__(('', settings.HEARTBEAT_PORT), HeartbeatHandler)
+
+
+class HeartbeatHandler(socketserver.BaseRequestHandler):
+
+    def handle(self):
+        logger.debug(f'Got heartbeat from {self.client_address[0]}...')
+
+        msg = self.request[0].decode('ascii').split('\\')
+
+        if msg[1] != 'heartbeat':
+            return
+
+        tasks.register(ip=self.client_address[0], port=msg[2])
