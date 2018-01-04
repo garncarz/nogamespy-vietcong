@@ -69,7 +69,7 @@ def _get_map_and_mode(info):
     map_, _ = models.get_or_create(models.Map, name=map_name)
     mode, _ = models.get_or_create(models.Mode, name=mode_name)
 
-    models.get_or_create(models.MapMode, map=map_name, mode=mode_name)
+    models.get_or_create(models.MapMode, map=map_, mode=mode)
 
     return map_, mode
 
@@ -110,8 +110,8 @@ def _merge_server_info(server, info):
     server.name = info['hostname']
 
     map_, mode = _get_map_and_mode(info)
-    server.map = map_.name
-    server.mode = mode.name
+    server.map = map_
+    server.mode = mode
 
     server.version = (lambda v: v[0] + '.' + v[1:])(info['uver'])
     server.max_players = info['maxplayers']
