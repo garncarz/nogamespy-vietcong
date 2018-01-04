@@ -155,6 +155,8 @@ def refresh_all_servers():
     for server in models.Server.query.all():
         pull_server_info(server)
 
+    # TODO remove offline servers & players after some time
+
 
 def register(ip, port, print_it=False):
     logger.debug(f'Trying to register {ip}:{port}...')
