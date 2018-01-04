@@ -15,6 +15,8 @@ Needed: Python 3
 
 `./setup.py build`
 
+`alembic upgrade head` (needs to be rerun every time a DB migration is released)
+
 
 ## Usage
 
@@ -23,5 +25,8 @@ Needed: Python 3
 
 
 ## Development
+
+
+`alembic revision [--autogenerate] -m "<migration message>"` (creates a new DB migration)
 
 `./test.sh` (runs tests and also generates a coverage)
