@@ -4,7 +4,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/garncarz/nogamespy-vietcong/badge.svg?branch=master)](https://coveralls.io/github/garncarz/nogamespy-vietcong?branch=master)
 
 Crawls servers hosting multi-player game and saves information via ORM into DB.
-Acts as an alternate master server.
+Acts as an alternative master server.
 
 
 ## Installation
@@ -30,3 +30,12 @@ Needed: Python 3
 `alembic revision [--autogenerate] -m "<migration message>"` (creates a new DB migration)
 
 `./test.sh` (runs tests and also generates a coverage)
+
+
+## Docker
+
+`docker build -t nogamespy-vietcong .`
+
+`docker run -it nogamespy-vietcong bash`
+
+`docker run -it -v <local volume path>:/app/volume nogamespy-vietcong ./app.py --help`

@@ -13,6 +13,7 @@ arg_parser.add_argument('--refresh', action='store_true', help='Refresh all save
 arg_parser.add_argument('--register', metavar=('IP', 'PORT'), nargs=2, help='Register new game server.')
 arg_parser.add_argument('--master', action='store_true', help='Run master server.')
 arg_parser.add_argument('--heartbeat', action='store_true', help='Run heartbeat server.')
+arg_parser.add_argument('--create-db-schema', action='store_true', help='Creates DB schema.')
 
 
 def main():
@@ -32,6 +33,8 @@ def main():
         tasks.run_master_server()
     if args.heartbeat:
         tasks.run_heartbeat_server()
+    if args.create_db_schema:
+        tasks.create_db_schema()
 
 
 if __name__ == '__main__':
