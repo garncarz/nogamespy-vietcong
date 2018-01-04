@@ -1,10 +1,6 @@
 settings_local.py
 conftest_local.py
 
-nohup.out
-vietcong.ini
-gslist*
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
