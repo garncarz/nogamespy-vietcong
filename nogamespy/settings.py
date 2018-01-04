@@ -1,4 +1,4 @@
-DATABASE = 'postgresql://localhost/vietcong'
+DATABASE = 'sqlite:///volume/db.sqlite'
 
 GAMESPY_KEY = 'bq98mE'
 

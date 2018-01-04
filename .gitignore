@@ -1,5 +1,7 @@
 settings_local.py
 conftest_local.py
+volume
+*.sqlite
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

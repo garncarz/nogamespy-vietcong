@@ -4,9 +4,10 @@ import socket
 
 import pygeoip
 import requests
+import sqlalchemy
 
 from . import models, protocol, settings
-from .database import db_session
+from .database import db_session, db_engine
 
 logger = logging.getLogger(__name__)
 
@@ -180,8 +181,14 @@ def register(ip, port, print_it=False):
             if print_it:
                 print('FAIL')
 
-            db_session.delete(server)
-            db_session.commit()
+            try:
+                db_session.delete(server)
+                db_session.commit()
+            except sqlalchemy.exc.InvalidRequestError:
+                # SQLite does "Instance '<Server at ...>' is not persisted"
+                # TODO check it, it seems the row exists in DB
+                logger.exception('Could not delete server.')
+
             return False
 
 
@@ -203,3 +210,8 @@ def run_heartbeat_server():
         server.serve_forever()
     except KeyboardInterrupt:
         server.shutdown()
+
+
+def create_db_schema():
+    logger.info('Creating DB schema...')
+    models.Base.metadata.create_all(db_engine)
