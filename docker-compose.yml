@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+
+  master:
+    image: nogamespy-vietcong
+    command: ./app.py --master
+    volumes:
+      - volume:/app/volume
+    ports:
+      - 28900:28900
+
+  heartbeat:
+    image: nogamespy-vietcong
+    command: ./app.py --heartbeat
+    volumes:
+      - volume:/app/volume
+    ports:
+      - 27900:27900/udp
+
+  celery_worker:
+    image: nogamespy-vietcong
+    command: celery worker -A nogamespy -l info
+    volumes:
+      - volume:/app/volume
+    links:
+      - redis
+
+  celery_beat:
+    image: nogamespy-vietcong
+    command: celery beat -A nogamespy -l info
+    volumes:
+      - volume:/app/volume
+    links:
+      - redis
+
+  redis:
+    image: redis:alpine
+
+volumes:
+  # TODO how to make it a local directory?
+  volume: {}
