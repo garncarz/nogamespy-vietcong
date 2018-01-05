@@ -36,6 +36,19 @@ Refresh servers (players, maps, etc.):
 `docker run -it -v $VOLUME:/app/volume garncarz/nogamespy-vietcong ./app.py --refresh`
 
 
+### Configuration
+
+Optionally, `settings_local.py` can contain:
+
+```py
+# PostgreSQL:
+DATABASE = 'postgresql://<user>:<password>@<host>[:<port>]/<dbname>[?<options>]'
+
+# MySQL:
+DATABASE = 'mysql+pymysql://<user>:<password>@<host>[:<port>]/<dbname>[?<options>]'
+```
+
+
 ## Development
 
 Needed: Python 3, Docker
