@@ -15,7 +15,7 @@ copy requirements.txt .
 run pip install --no-cache-dir -r requirements.txt
 
 copy . .
-# run ./setup.py build  # if `build` dir not copied from the last step
+# run ./setup.py build  # if `build` dir not copied from the last step, but then `slim` base image can't be used
 
 volume /app/volume
 run ln -s /app/volume/settings_local.py nogamespy/settings_local.py
