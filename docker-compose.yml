@@ -3,7 +3,7 @@ version: '3'
 services:
 
   master:
-    image: nogamespy-vietcong
+    image: garncarz/nogamespy-vietcong
     command: ./app.py --master
     volumes:
       - ./volume:/app/volume
@@ -11,7 +11,7 @@ services:
       - 28900:28900
 
   heartbeat:
-    image: nogamespy-vietcong
+    image: garncarz/nogamespy-vietcong
     command: ./app.py --heartbeat
     volumes:
       - ./volume:/app/volume
@@ -19,7 +19,7 @@ services:
       - 27900:27900/udp
 
   celery_worker:
-    image: nogamespy-vietcong
+    image: garncarz/nogamespy-vietcong
     command: celery worker -A nogamespy -l info
     volumes:
       - ./volume:/app/volume
@@ -27,7 +27,7 @@ services:
       - redis
 
   celery_beat:
-    image: nogamespy-vietcong
+    image: garncarz/nogamespy-vietcong
     command: celery beat -A nogamespy -l info
     volumes:
       - ./volume:/app/volume
