@@ -7,7 +7,7 @@ import requests
 import sqlalchemy
 
 from . import models, protocol, settings
-from .database import db_session, db_engine
+from .database import db_session
 
 logger = logging.getLogger(__name__)
 
@@ -210,8 +210,3 @@ def run_heartbeat_server():
         server.serve_forever()
     except KeyboardInterrupt:
         server.shutdown()
-
-
-def create_db_schema():
-    logger.info('Creating DB schema...')
-    models.Base.metadata.create_all(db_engine)
