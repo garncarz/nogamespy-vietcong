@@ -19,8 +19,9 @@ Ports used are:
 - 28900 TCP for the master server (game clients fetching the server list)
 - 27900 UDP for the heartbeat service (game servers introducing themselves)
 
-DB schema creation:
-`docker run -it -v $VOLUME:/app/volume garncarz/nogamespy-vietcong ./app.py --create-db-schema`
+DB schema migration:
+`docker run -it -v $VOLUME:/app/volume garncarz/nogamespy-vietcong alembic upgrade head`
+(needs to be run before the first use and on every change of the schema)
 
 Master server:
 `docker run -it -v $VOLUME:/app/volume -p 28900:28900 garncarz/nogamespy-vietcong ./app.py --master`
