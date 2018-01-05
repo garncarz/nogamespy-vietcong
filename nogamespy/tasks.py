@@ -129,12 +129,12 @@ def refresh_all_servers():
     # TODO remove offline servers & players after some time
 
 
-def register(ip, port, print_it=False):
+def register(ip, port, print_it=False, force_pull=False):
     logger.debug(f'Trying to register {ip}:{port}...')
 
     server, created = models.get_or_create(models.Server, ip=ip, info_port=port)
 
-    if not created:
+    if not created and not force_pull:
         if print_it:
             print('EXISTS')
         return True
