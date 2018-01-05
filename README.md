@@ -9,31 +9,24 @@ Acts as an alternative master server.
 
 ## Usage
 
-Needed: Docker
+Needed: Docker, Docker Compose
 
-If you want to overwrite settings or persist a SQLite database (but PostgreSQL/MySQL can be used as well),
-create your local volume directory (`$VOLUME`).
-The application will use `db.sqlite` and `settings_local.py` from this location.
+You also need to have the `docker-compose.yml` file from this repository locally.
 
-Ports used are:
-- 28900 TCP for the master server (game clients fetching the server list)
-- 27900 UDP for the heartbeat service (game servers introducing themselves)
+Run `docker-compose run master alembic upgrade head` to upgrade the DB schema.
+It needs to be run before the first use and on every change of the schema.
+It will create a SQLite DB in `volume/db.sqlite` by default, but you can use PostgreSQL/MySQL if you want to.
 
-DB schema migration:
-`docker run -it -v $VOLUME:/app/volume garncarz/nogamespy-vietcong alembic upgrade head`
-(needs to be run before the first use and on every change of the schema)
+Run `docker-compose up` to start all services. `Ctrl+C` to exit.
 
-Master server:
-`docker run -it -v $VOLUME:/app/volume -p 28900:28900 garncarz/nogamespy-vietcong ./app.py --master`
+If you want them demonized, use `docker-compose start` and `docker-compose stop`.
 
-Heartbeat service:
-`docker run -it -v $VOLUME:/app/volume -p 27900:27900/udp garncarz/nogamespy-vietcong ./app.py --heartbeat`
+There will be a `volume` directory created (if it already does not exist).
+It can contain `db.sqlite` and `settings_local.py` (overwritten settings) and the services will use them.
 
-Pull new servers from Qtracker:
-`docker run -it -v $VOLUME:/app/volume garncarz/nogamespy-vietcong ./app.py --new`
-
-Refresh servers (players, maps, etc.):
-`docker run -it -v $VOLUME:/app/volume garncarz/nogamespy-vietcong ./app.py --refresh`
+Published ports are:
+- 28900 TCP for the master server (game clients fetch the servers list here)
+- 27900 UDP for the heartbeat service (game servers introduce themselves here)
 
 
 ### Configuration
@@ -51,9 +44,7 @@ DATABASE = 'mysql+pymysql://<user>:<password>@<host>[:<port>]/<dbname>[?<options
 
 ## Development
 
-Needed: Python 3, Docker
-
-Optionally: PostgreSQL or MySQL
+Needed extra: Python 3
 
 `pip install -r requirements.txt -r requirements-test.txt`
 
