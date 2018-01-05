@@ -1,5 +1,6 @@
 settings_local.py
 conftest_local.py
+docker-compose.override.yml
 volume
 *.sqlite
 celerybeat-schedule
