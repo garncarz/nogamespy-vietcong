@@ -73,7 +73,7 @@ class HeartbeatHandler(socketserver.BaseRequestHandler):
         if msg[1] != 'heartbeat':
             return
 
-        tasks.register(ip=self.client_address[0], port=msg[2])
+        tasks.register(ip=self.client_address[0], port=msg[2], force_pull=True)
 
 
 def fetch_from_master(ip):
