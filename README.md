@@ -39,6 +39,9 @@ DATABASE = 'postgresql://<user>:<password>@<host>[:<port>]/<dbname>[?<options>]'
 
 # MySQL:
 DATABASE = 'mysql+pymysql://<user>:<password>@<host>[:<port>]/<dbname>[?<options>]'
+
+# Counting statistics:
+STATSD_HOST = '...'
 ```
 
 

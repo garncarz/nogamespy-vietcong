@@ -7,6 +7,7 @@ import sqlalchemy
 
 from . import celery, models, protocol
 from .database import db_session
+from .statsd import statsd
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +31,8 @@ def pull_master(source=None):
 
     for ip, port in servers:
         register(ip, port)
+
+    statsd.incr('foreign_master_pulled')
 
 
 def _get_map_and_mode(info):
@@ -131,6 +134,8 @@ def refresh_all_servers():
         pull_server_info(server)
 
     # TODO remove offline servers & players after some time
+
+    statsd.incr('servers_refreshed')
 
 
 def register(ip, port, print_it=False, force_pull=False):

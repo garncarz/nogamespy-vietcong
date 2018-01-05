@@ -5,3 +5,4 @@ pygeoip
 pymysql
 requests
 sqlalchemy
+statsd
