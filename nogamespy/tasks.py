@@ -6,10 +6,12 @@ import pygeoip
 import requests
 import sqlalchemy
 
-from . import models, protocol, settings
+from . import celery, models, protocol, settings
 from .database import db_session
 
 logger = logging.getLogger(__name__)
+
+task = celery.app.task
 
 geoip = pygeoip.GeoIP('/usr/share/GeoIP/GeoIP.dat')
 
@@ -42,6 +44,7 @@ def _fetch_from_master(ip):
     return servers
 
 
+@task
 def pull_master(source=None):
     servers = _get_qtracker_list() if not source else _fetch_from_master(source)
 
@@ -147,6 +150,7 @@ def pull_server_info(server):
         return False
 
 
+@task
 def refresh_all_servers():
     logger.debug(f'Refreshing info for all saved servers...')
 
