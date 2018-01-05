@@ -114,6 +114,10 @@ def pull_server_info(server):
         logger.debug(f'{server}: UDP timeout')
         return False
 
+    except ConnectionRefusedError:
+        logger.debug(f'{server}: connection refused')
+        return False
+
 
 @task
 def refresh_all_servers():
