@@ -12,7 +12,7 @@ run mkdir /app
 workdir /app
 
 copy requirements.txt .
-run pip install -r requirements.txt
+run pip install --no-cache-dir -r requirements.txt
 
 copy . .
 # run ./setup.py build  # if `build` dir not copied from the last step

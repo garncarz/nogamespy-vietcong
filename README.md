@@ -55,7 +55,7 @@ Needed: Python 3, Docker
 
 Optionally: PostgreSQL or MySQL
 
-`pip install -r requirements.txt`
+`pip install -r requirements.txt -r requirements-test.txt`
 
 `./setup.py build`
 
