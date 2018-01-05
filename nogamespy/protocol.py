@@ -6,6 +6,7 @@ import struct
 
 import aluigi
 from . import models, tasks, settings
+from .statsd import statsd
 
 
 logger = logging.getLogger(__name__)
@@ -54,6 +55,8 @@ class MasterHandler(socketserver.BaseRequestHandler):
 
         self.request.send(encode_list(byte_string))
 
+        statsd.incr('master_pulled')
+
 
 class HeartbeatService(socketserver.UDPServer):
 
@@ -74,6 +77,8 @@ class HeartbeatHandler(socketserver.BaseRequestHandler):
             return
 
         tasks.register(ip=self.client_address[0], port=msg[2], force_pull=True)
+
+        statsd.incr('heartbeat_registered')
 
 
 def fetch_from_master(ip):

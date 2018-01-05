@@ -26,6 +26,10 @@ CELERYBEAT_SCHEDULE = {
     },
 }
 
+STATSD_HOST = 'localhost'
+STATSD_PORT = 8125
+STATSD_PREFIX = 'nogamespy'
+
 try:
     from .settings_local import *
 except ImportError:
