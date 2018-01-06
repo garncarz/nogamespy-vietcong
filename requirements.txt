@@ -3,6 +3,7 @@ celery[redis]
 psycopg2
 pygeoip
 pymysql
+raven
 requests
 sqlalchemy
 statsd
