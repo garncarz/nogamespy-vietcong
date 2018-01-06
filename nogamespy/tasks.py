@@ -133,7 +133,7 @@ def refresh_all_servers():
     for server in models.Server.query.all():
         pull_server_info(server)
 
-    # TODO remove offline servers & players after some time
+    models.remove_offline_entities()
 
     statsd.incr('servers_refreshed')
 
