@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 import logging
 
-from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime, func, or_
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime, func, or_, inspect
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import ClauseElement
 
@@ -29,6 +29,14 @@ def get_or_create(_model, _session=db_session, _defaults={}, **kwargs):
         # db_session.commit()  old DB schema forbids null values for some columns
 
         return instance, True
+
+
+def delete_if_persistent(instance):
+    if inspect(instance).persistent:
+        db_session.delete(instance)
+        return True
+
+    return False
 
 
 class Map(Base):
