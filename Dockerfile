@@ -2,7 +2,7 @@ from python:3-slim
 
 run apt-get update && apt-get install -y \
     geoip-database \
-    # helping when developing:
+    # helpful when developing:
     tree ncdu \
   && rm -rf /var/lib/apt/lists/*
 

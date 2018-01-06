@@ -40,6 +40,9 @@ DATABASE = 'postgresql://<user>:<password>@<host>[:<port>]/<dbname>[?<options>]'
 # MySQL:
 DATABASE = 'mysql+pymysql://<user>:<password>@<host>[:<port>]/<dbname>[?<options>]'
 
+# Logging aggregation:
+SENTRY_DSN = 'https://<key>:<secret>@sentry.io/<project>'
+
 # Counting statistics:
 STATSD_HOST = '...'
 ```
