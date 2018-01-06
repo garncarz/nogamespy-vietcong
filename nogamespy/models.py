@@ -31,7 +31,11 @@ class Map(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
 
-    # TODO relations to modes & servers
+    modes = relationship('Mode', secondary='mapmode')
+    servers = relationship('Server')
+
+    def __repr__(self):
+        return f'<Map name={self.name}>'
 
 
 class Mode(Base):
@@ -40,7 +44,11 @@ class Mode(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
 
-    # TODO relations to maps & servers
+    maps = relationship('Map', secondary='mapmode')
+    servers = relationship('Server')
+
+    def __repr__(self):
+        return f'<Mode name={self.name}>'
 
 
 class MapMode(Base):
@@ -84,10 +92,13 @@ class Server(Base):
     online_since = Column('onlineSince', DateTime, default=func.now())
     offline_since = Column('offlineSince', DateTime)
 
-    map = relationship('Map')
-    mode = relationship('Mode')
+    map = relationship('Map', back_populates='servers')
+    mode = relationship('Mode', back_populates='servers')
     players = relationship('Player', back_populates='server')
     # TODO cascade delete of players
+
+    def __str__(self):
+        return self.name
 
     def __repr__(self):
         return f'<Server ip={self.ip} info_port={self.info_port} name={self.name}>'
@@ -108,3 +119,6 @@ class Player(Base):
     online_since = Column('onlineSince', DateTime, default=func.now())
 
     server = relationship('Server', back_populates='players')
+
+    def __repr__(self):
+        return f'<Player name={self.name} server={self.server}>'
