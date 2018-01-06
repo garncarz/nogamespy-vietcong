@@ -161,13 +161,8 @@ def register(ip, port, print_it=False, force_pull=False):
             if print_it:
                 print('FAIL')
 
-            try:
-                db_session.delete(server)
+            if models.delete_if_persistent(server):
                 db_session.commit()
-            except sqlalchemy.exc.InvalidRequestError:
-                # SQLite does "Instance '<Server at ...>' is not persisted"
-                # TODO check it, it seems the row exists in DB
-                logger.exception('Could not delete server.')
 
             return False
 
