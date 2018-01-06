@@ -1,8 +1,14 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime, func
+from datetime import datetime, timedelta
+import logging
+
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime, func, or_
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import ClauseElement
 
 from .database import Base, db_session
+from . import settings
+
+logger = logging.getLogger(__name__)
 
 
 # https://gist.github.com/codeb2cc/3302754
@@ -95,10 +101,6 @@ class Server(Base):
     map = relationship('Map', back_populates='servers')
     mode = relationship('Mode', back_populates='servers')
     players = relationship('Player', back_populates='server')
-    # TODO cascade delete of players
-
-    def __str__(self):
-        return self.name
 
     def __repr__(self):
         return f'<Server ip={self.ip} info_port={self.info_port} name={self.name}>'
@@ -121,4 +123,43 @@ class Player(Base):
     server = relationship('Server', back_populates='players')
 
     def __repr__(self):
-        return f'<Player name={self.name} server={self.server}>'
+        return f'<Player name={self.name} server={self.server.name}>'
+
+
+def remove_offline_entities():
+    players_deleted = Player.query.filter(
+        or_(
+            Player.online == False,
+            Player.server.has(Server.online == False),
+        ),
+    ).delete(synchronize_session='fetch')
+
+    Server.query.filter(
+        Server.online == True,
+        Server.offline_since is not None,
+    ).update({
+        'offline_since': None,
+    })
+
+    servers_went_offline = Server.query.filter(
+        Server.online == False,
+        Server.offline_since is None,
+    ).update({
+        'offline_since': datetime.now(),
+    }, synchronize_session='fetch')
+
+    servers_deleted = Server.query.filter(
+        Server.online == False,
+        Server.offline_since < datetime.now() - timedelta(minutes=settings.KEEP_OFFLINE_SERVERS_FOR_MINUTES),
+    ).delete()
+
+    db_session.commit()
+
+    if players_deleted:
+        logger.debug(f'{players_deleted} offline players deleted.')
+
+    if servers_went_offline:
+        logger.debug(f'{servers_went_offline} servers went offline.')
+
+    if servers_deleted:
+        logger.debug(f'{servers_deleted} offline servers deleted.')

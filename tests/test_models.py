@@ -1,5 +1,9 @@
+from datetime import datetime, timedelta
+
+from sqlalchemy import inspect
+
 from nogamespy.database import db_session
-from nogamespy import models
+from nogamespy import models, settings
 
 import factories
 
@@ -57,3 +61,39 @@ def test_server_map_mode_servers():
 
     assert mode.maps == [map_]
     assert mode.servers == [server1, server2]
+
+
+def test_remove_offline_entities():
+    server1 = factories.Server(online=False, offline_since=datetime.now() - timedelta(minutes=5))
+    server2 = factories.Server(online=False, offline_since=datetime.now() - timedelta(minutes=20))
+    server3 = factories.Server(online=True, offline_since=datetime.now() - timedelta(hours=2))
+    # meaning it went offline 2 hours ago, but is online again, thus it should not be deleted
+
+    player1 = factories.Player(server=server1, online=True)  # by mistake still set to be online
+    player2 = factories.Player(server=server2)
+    player3 = factories.Player(server=server3, online=True)
+    player4 = factories.Player(server=server3, online=False)
+
+    db_session.add_all([server1, server2, server3])
+    db_session.commit()
+
+    settings.KEEP_OFFLINE_SERVERS_FOR_MINUTES = 10
+    models.remove_offline_entities()
+
+    assert not inspect(server1).was_deleted
+    assert inspect(server2).was_deleted
+    assert not inspect(server3).was_deleted
+
+    assert server3.offline_since is None
+
+    assert inspect(player1).was_deleted
+    assert inspect(player2).was_deleted
+    assert not inspect(player3).was_deleted
+    assert inspect(player4).was_deleted
+
+    settings.KEEP_OFFLINE_SERVERS_FOR_MINUTES = 0
+    models.remove_offline_entities()
+
+    assert inspect(server1).was_deleted
+    assert not inspect(server3).was_deleted
+    assert not inspect(player3).was_deleted
