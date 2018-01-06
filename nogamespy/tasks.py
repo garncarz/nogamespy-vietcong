@@ -42,7 +42,9 @@ def _get_map_and_mode(info):
     map_, _ = models.get_or_create(models.Map, name=map_name)
     mode, _ = models.get_or_create(models.Mode, name=mode_name)
 
-    models.get_or_create(models.MapMode, map=map_, mode=mode)
+    if mode not in map_.modes:
+        map_.modes.append(mode)
+        db_session.add(map_)
 
     return map_, mode
 
@@ -91,8 +93,6 @@ def _merge_server_info(server, info):
     if 'hbver' in info:
         server.hradba = info['hbver']
 
-    _merge_players_info(server, info)
-
 
 def pull_server_info(server):
     if isinstance(server, int):
@@ -107,7 +107,9 @@ def pull_server_info(server):
 
         db_session.add(server)
         _merge_server_info(server, info)
+        db_session.commit()  # so players can attach to server.id
 
+        _merge_players_info(server, info)
         db_session.commit()
 
         logger.debug(f'Pulled info for {server}')
