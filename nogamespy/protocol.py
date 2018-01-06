@@ -12,8 +12,16 @@ from .statsd import statsd
 logger = logging.getLogger(__name__)
 
 
-def encode_list(decrypted):
-    return aluigi.encode_list(settings.GAMESPY_KEY, memoryview(decrypted).tobytes())
+def encode_list(servers):
+    byte_string = bytearray()
+
+    for ip, port in servers:
+        byte_string.extend(socket.inet_aton(ip))
+        byte_string.extend(struct.pack('>h', port))
+
+    byte_string.extend(b'\\final\\')
+
+    return aluigi.encode_list(settings.GAMESPY_KEY, memoryview(byte_string).tobytes())
 
 
 def decode_list(encrypted):
@@ -26,6 +34,16 @@ def decode_list(encrypted):
         ip = socket.inet_ntoa(decrypted[i:i+4])
         port = struct.unpack('>h', decrypted[i+4:i+6])[0]
         yield ip, port
+
+
+# TODO cache for some small amount of time
+def get_encoded_server_list():
+    servers = []
+
+    for server in models.Server.query.filter_by(online=True).all():
+        servers.append((server.ip, server.info_port))
+
+    return encode_list(servers)
 
 
 class MasterService(socketserver.TCPServer):
@@ -42,18 +60,7 @@ class MasterHandler(socketserver.BaseRequestHandler):
         logger.debug(f'Responding to {self.request.getpeername()[0]}...')
 
         self.request.sendall('\\basic\\\\secure\\'.encode('latin1'))
-
-        # TODO cache for some small amount of time
-        byte_string = bytearray()
-
-        for server in models.Server.query.filter_by(online=True).all():
-            # TODO move byte schema to encode_list
-            byte_string.extend(socket.inet_aton(server.ip))
-            byte_string.extend(struct.pack('>h', server.info_port))
-
-        byte_string.extend(b'\\final\\')
-
-        self.request.send(encode_list(byte_string))
+        self.request.send(get_encoded_server_list())
 
         statsd.incr('master_pulled')
 
