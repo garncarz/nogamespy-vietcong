@@ -48,6 +48,8 @@ SENTRY_DSN = 'https://<key>:<secret>@sentry.io/<project>'
 STATSD_HOST = '...'
 ```
 
+You can pass those values also in form of environment variables.
+
 
 ## Development
 
