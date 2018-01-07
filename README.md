@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/garncarz/nogamespy-vietcong.svg?branch=master)](https://travis-ci.org/garncarz/nogamespy-vietcong)
 [![Coverage Status](https://coveralls.io/repos/github/garncarz/nogamespy-vietcong/badge.svg?branch=master)](https://coveralls.io/github/garncarz/nogamespy-vietcong?branch=master)
+[![Docker image](https://images.microbadger.com/badges/image/garncarz/nogamespy-vietcong.svg)](https://microbadger.com/images/garncarz/nogamespy-vietcong)
 
 Crawls servers hosting multi-player game and saves information via ORM into DB.
 Acts as an alternative master server.
