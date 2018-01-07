@@ -1,8 +1,9 @@
 import logging.config
+import os
 
 from celery.schedules import crontab
 
-DATABASE = 'sqlite:///volume/db.sqlite'
+DATABASE = os.getenv('DATABASE', 'sqlite:///volume/db.sqlite')
 
 GAMESPY_KEY = 'bq98mE'
 
@@ -31,9 +32,9 @@ CELERYBEAT_SCHEDULE = {
     },
 }
 
-SENTRY_DSN = None
+SENTRY_DSN = os.getenv('SENTRY_DSN')
 
-STATSD_HOST = 'localhost'
+STATSD_HOST = os.getenv('STATSD_HOST', 'localhost')
 STATSD_PORT = 8125
 STATSD_PREFIX = 'nogamespy'
 
