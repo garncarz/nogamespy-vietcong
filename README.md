@@ -65,7 +65,7 @@ Needed extra: Python 3
 
 `./test.sh` (runs tests and also generates a coverage)
 
-`docker build -t nogamespy-vietcong .`
+`docker build -t nogamespy-vietcong -f Dockerfile-dev .`
 
 `docker run -it nogamespy-vietcong bash`
 
