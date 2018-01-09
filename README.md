@@ -20,7 +20,7 @@ It will create a SQLite DB in `volume/db.sqlite` by default, but you can use Pos
 
 Run `docker-compose up` to start all services. `Ctrl+C` to exit.
 
-If you want them demonized, use `docker-compose start` and `docker-compose stop`.
+If you want them demonized, use `docker-compose up -d` and `docker-compose down`.
 
 There will be a `volume` directory created (if it already does not exist).
 It can contain `db.sqlite` and `settings_local.py` (overwritten settings) and the services will use them.
