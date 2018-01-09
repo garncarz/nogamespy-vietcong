@@ -123,6 +123,13 @@ def pull_server_info(server):
         logger.debug(f'{server}: connection refused')
         return False
 
+    except OSError as e:
+        if e.errno == 113:  # no route to host
+            logger.debug(f'{server}: no route to host')
+            return False
+        else:
+            raise
+
 
 @task
 def refresh_all_servers():
