@@ -6,6 +6,7 @@ import struct
 
 import aluigi
 from . import models, tasks, settings
+from .database import db_session
 from .statsd import statsd
 
 
@@ -59,6 +60,9 @@ class MasterHandler(socketserver.BaseRequestHandler):
     def handle(self):
         logger.debug(f'Responding to {self.request.getpeername()[0]}...')
 
+        # so we're not stuck in a previous invalid transaction
+        db_session.remove()
+
         self.request.sendall('\\basic\\\\secure\\'.encode('latin1'))
         self.request.send(get_encoded_server_list())
 
@@ -77,6 +81,9 @@ class HeartbeatHandler(socketserver.BaseRequestHandler):
 
     def handle(self):
         logger.debug(f'Got heartbeat from {self.client_address[0]}...')
+
+        # so we're not stuck in a previous invalid transaction
+        db_session.remove()
 
         msg = self.request[0].decode('ascii').split('\\')
 
