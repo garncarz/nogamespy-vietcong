@@ -4,6 +4,7 @@ services:
 
   master:
     image: garncarz/nogamespy-vietcong
+    build: .
     command: ./app.py --master
     volumes:
       - ./volume:/app/volume
@@ -12,6 +13,7 @@ services:
 
   heartbeat:
     image: garncarz/nogamespy-vietcong
+    build: .
     command: ./app.py --heartbeat
     volumes:
       - ./volume:/app/volume
@@ -20,6 +22,7 @@ services:
 
   celery_worker:
     image: garncarz/nogamespy-vietcong
+    build: .
     command: celery worker -A nogamespy -l info
     volumes:
       - ./volume:/app/volume
@@ -28,6 +31,7 @@ services:
 
   celery_beat:
     image: garncarz/nogamespy-vietcong
+    build: .
     command: celery beat -A nogamespy -l info
     volumes:
       - ./volume:/app/volume
