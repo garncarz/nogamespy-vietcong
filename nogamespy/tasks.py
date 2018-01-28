@@ -107,6 +107,7 @@ def pull_server_info(server):
 
         db_session.add(server)
         _merge_server_info(server, info)
+        server.waiting_for_sync = False
         db_session.commit()  # so players can attach to server.id
 
         _merge_players_info(server, info)
@@ -135,13 +136,14 @@ def pull_server_info(server):
 def refresh_all_servers():
     logger.debug(f'Refreshing info for all saved servers...')
 
-    models.Server.query.update({'online': False})
+    models.Server.query.update({'waiting_for_sync': True})
     models.Player.query.update({'online': False})
     db_session.commit()
 
     for server in models.Server.query.all():
         pull_server_info(server)
 
+    models.Server.query.filter_by(waiting_for_sync=True).update({'online': False})
     models.remove_offline_entities()
 
     statsd.incr('servers_refreshed')

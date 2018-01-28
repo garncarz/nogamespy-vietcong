@@ -105,6 +105,7 @@ class Server(Base):
     online = Column(Boolean)
     online_since = Column('onlineSince', DateTime, default=func.now())
     offline_since = Column('offlineSince', DateTime)
+    waiting_for_sync = Column(Boolean, default=False)
 
     map = relationship('Map', back_populates='servers')
     mode = relationship('Mode', back_populates='servers')
