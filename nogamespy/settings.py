@@ -34,6 +34,8 @@ CELERYBEAT_SCHEDULE = {
 
 SENTRY_DSN = os.getenv('SENTRY_DSN')
 
+LOGZIO_TOKEN = os.getenv('LOGZIO_TOKEN')
+
 STATSD_HOST = os.getenv('STATSD_HOST', 'localhost')
 STATSD_PORT = 8125
 STATSD_PREFIX = 'nogamespy'
@@ -42,9 +44,6 @@ STATSD_PREFIX = 'nogamespy'
 def sentry_filter(record):
     if (record.name.startswith('celery.')
             and record.levelno < logging.WARNING):
-        return False
-
-    if record.levelno < logging.INFO:
         return False
 
     return True
@@ -58,6 +57,9 @@ LOGGING = lambda: {
         'verbose': {
             'format': '[%(asctime)s][%(levelname)s] %(name)s '
                       '%(filename)s:%(funcName)s:%(lineno)d | %(message)s',
+        },
+        'logzioFormat': {
+            'format': '{"app": "nogamespy"}',
         },
     },
 
@@ -74,6 +76,7 @@ LOGGING = lambda: {
             'formatter': 'verbose',
         },
         'sentry': {
+            'level': 'WARNING',
             'class': 'raven.handlers.logging.SentryHandler',
             'dsn': SENTRY_DSN,
             'filters': ['mute_at_sentry'],
@@ -98,4 +101,19 @@ except ImportError:
 
 
 LOGGING = LOGGING()
+
+if LOGZIO_TOKEN:
+    LOGGING['handlers']['logzio'] = {
+        'level': 'INFO',
+        'class': 'logzio.handler.LogzioHandler',
+        'formatter': 'logzioFormat',
+        'token': LOGZIO_TOKEN,
+        'logzio_type': 'python',
+        'logs_drain_timeout': 5,
+        'url': 'https://listener.logz.io:8071',
+        'debug': False,
+    }
+
+    LOGGING['loggers']['']['handlers'].append('logzio')
+
 logging.config.dictConfig(LOGGING)

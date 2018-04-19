@@ -1,5 +1,6 @@
 alembic
 celery[redis]
+logzio-python-handler
 psycopg2
 pygeoip
 pymysql
