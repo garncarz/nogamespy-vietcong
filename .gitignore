@@ -5,6 +5,8 @@ volume
 *.sqlite
 celerybeat-schedule
 
+qemu-arm-static
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

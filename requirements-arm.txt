@@ -1,0 +1,8 @@
+alembic
+celery[redis]
+logzio-python-handler
+pygeoip
+raven
+requests
+sqlalchemy
+statsd

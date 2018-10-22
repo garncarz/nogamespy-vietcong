@@ -1,0 +1,31 @@
+from arm32v6/python:3-alpine
+
+copy ./qemu-arm-static /usr/bin/qemu-arm-static
+
+run mkdir /app
+workdir /app
+
+copy . .
+
+run BUILD_DEPS='gcc musl-dev' \
+  && apk update \
+  && apk add $BUILD_DEPS \
+  && mkdir /usr/share/GeoIP \
+  && wget -qO- "http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz" | gzip -d -c - > /usr/share/GeoIP/GeoIP.dat \
+  && rm -rf /var/cache/apk/* \
+  && pip install --no-cache-dir -r requirements-arm.txt \
+  && ./setup.py build \
+  && rm -fr build/temp* \
+  && apk del $BUILD_DEPS
+
+volume /app/volume
+run ln -s /app/volume/settings_local.py nogamespy/settings_local.py
+
+env PYTHONPATH build/lib.linux-armv7l-3.7
+
+expose 27900/udp 28900
+
+## trying to use non-root user:
+# run chown -R nobody .
+# user nobody
+## unfortunately volume still belongs to root then and thus db.sqlite is read-only

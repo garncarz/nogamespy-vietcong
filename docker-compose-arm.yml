@@ -1,0 +1,50 @@
+version: '3'
+
+services:
+
+  master:
+    image: garncarz/nogamespy-vietcong:arm
+    build:
+      context: .
+      dockerfile: Dockerfile-arm
+    command: ./app.py --master
+    volumes:
+      - ./volume:/app/volume
+    ports:
+      - 28900:28900
+
+  heartbeat:
+    image: garncarz/nogamespy-vietcong:arm
+    build:
+      context: .
+      dockerfile: Dockerfile-arm
+    command: ./app.py --heartbeat
+    volumes:
+      - ./volume:/app/volume
+    ports:
+      - 27900:27900/udp
+
+  celery_worker:
+    image: garncarz/nogamespy-vietcong:arm
+    build:
+      context: .
+      dockerfile: Dockerfile-arm
+    command: celery worker -A nogamespy -l info
+    volumes:
+      - ./volume:/app/volume
+    links:
+      - redis
+
+  celery_beat:
+    image: garncarz/nogamespy-vietcong:arm
+    build:
+      context: .
+      dockerfile: Dockerfile-arm
+    command: celery beat -A nogamespy -l info
+    volumes:
+      - ./volume:/app/volume
+    links:
+      - redis
+
+  redis:
+    image: arm32v6/redis:alpine
