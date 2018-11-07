@@ -35,6 +35,7 @@ CELERYBEAT_SCHEDULE = {
 SENTRY_DSN = os.getenv('SENTRY_DSN')
 
 LOGZIO_TOKEN = os.getenv('LOGZIO_TOKEN')
+LOGZIO_LEVEL = os.getenv('LOGZIO_LEVEL', 'INFO')
 
 STATSD_HOST = os.getenv('STATSD_HOST', 'localhost')
 STATSD_PORT = 8125
@@ -104,7 +105,7 @@ LOGGING = LOGGING()
 
 if LOGZIO_TOKEN:
     LOGGING['handlers']['logzio'] = {
-        'level': 'INFO',
+        'level': LOGZIO_LEVEL,
         'class': 'logzio.handler.LogzioHandler',
         'formatter': 'logzioFormat',
         'token': LOGZIO_TOKEN,
