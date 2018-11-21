@@ -152,7 +152,7 @@ def remove_offline_entities():
 
     servers_went_offline = Server.query.filter(
         Server.online == False,
-        Server.offline_since is None,
+        Server.offline_since.is_(None),
     ).update({
         'offline_since': datetime.now(),
     }, synchronize_session='fetch')
@@ -171,4 +171,4 @@ def remove_offline_entities():
         logger.debug(f'{servers_went_offline} servers went offline.')
 
     if servers_deleted:
-        logger.debug(f'{servers_deleted} offline servers deleted.')
+        logger.info(f'{servers_deleted} offline servers deleted.')
