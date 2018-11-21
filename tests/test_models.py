@@ -97,3 +97,14 @@ def test_remove_offline_entities():
     assert inspect(server1).was_deleted
     assert not inspect(server3).was_deleted
     assert not inspect(player3).was_deleted
+
+
+def test_set_server_offline_since():
+    server = factories.Server(online=False)
+
+    db_session.add(server)
+    db_session.commit()
+
+    models.remove_offline_entities()
+
+    assert datetime.now() - server.offline_since < timedelta(seconds=10)  # "now", but test can run slowly
