@@ -1,7 +1,7 @@
 alembic
 celery[redis]
 logzio-python-handler
-psycopg2
+psycopg2-binary
 pygeoip
 pymysql
 raven
