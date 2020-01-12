@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+
+  master:
+    image: nogamespy-vietcong:dev
+    build:
+      dockerfile: Dockerfile-dev
+    volumes:
+      - .:/app
+
+  heartbeat:
+    image: nogamespy-vietcong:dev
+    volumes:
+      - .:/app
+
+  celery_worker:
+    image: nogamespy-vietcong:dev
+    volumes:
+      - .:/app
+
+  celery_beat:
+    image: nogamespy-vietcong:dev
+    volumes:
+      - .:/app
+
+  db:
+    image: postgres:alpine

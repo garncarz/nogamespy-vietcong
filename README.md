@@ -53,26 +53,17 @@ You can pass those values also in form of environment variables.
 
 ## Development
 
-Needed extra: Python 3
+`./dev.sh build master`
 
-`pip install -r requirements.txt -r requirements-test.txt`
+`./dev.sh run master ./test.sh`
 
-`./setup.py build`
+`./dev.sh run master ./app.py --help`
 
-`alembic upgrade head` (needs to be rerun every time a DB migration is released)
-
-`PYTHONPATH=build/lib.linux-x86_64-3.6 ./app.py --help`
-(the exact `lib*` subdirectory name depends on the version of Python)
+Under `./dev.sh run master bash`:
 
 `alembic revision [--autogenerate] -m "<migration message>"` (creates a new DB migration)
 
-`./test.sh` (runs tests and also generates a coverage)
-
-`docker build -t nogamespy-vietcong -f Dockerfile-dev .`
-
-`docker run -it nogamespy-vietcong bash`
-
-`docker run -it -v <local volume path>:/app/volume nogamespy-vietcong ./app.py --help`
+`alembic upgrade head` (needs to be rerun every time a DB migration is released)
 
 
 <!-- ❄️ Hello to the GitHub Archive! ❄️ -->

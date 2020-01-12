@@ -8,4 +8,3 @@ raven
 requests
 sqlalchemy
 statsd
-redis==2.10.6  # temporary fix, whole line can be deleted when dependencies are fixed

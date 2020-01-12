@@ -4,6 +4,7 @@ docker-compose.override.yml
 volume
 *.sqlite
 celerybeat-schedule
+celerybeat.pid
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
