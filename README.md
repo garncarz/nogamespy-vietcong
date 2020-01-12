@@ -16,14 +16,10 @@ You also need to have the `docker-compose.yml` file from this repository locally
 
 Run `docker-compose run master alembic upgrade head` to upgrade the DB schema.
 It needs to be run before the first use and on every change of the schema.
-It will create a SQLite DB in `volume/db.sqlite` by default, but you can use PostgreSQL/MySQL if you want to.
 
 Run `docker-compose up` to start all services. `Ctrl+C` to exit.
 
 If you want them demonized, use `docker-compose up -d` and `docker-compose down`.
-
-There will be a `volume` directory created (if it already does not exist).
-It can contain `db.sqlite` and `settings_local.py` (overwritten settings) and the services will use them.
 
 Published ports are:
 - 28900 TCP for the master server (game clients fetch the servers list here)
@@ -32,23 +28,22 @@ Published ports are:
 
 ### Configuration
 
-Optionally, `settings_local.py` can contain:
+Optionally, use these environment variables (they can be in the `.env` file):
 
 ```py
 # PostgreSQL:
-DATABASE = 'postgresql://<user>:<password>@<host>[:<port>]/<dbname>[?<options>]'
+DATABASE='postgresql://<user>:<password>@<host>[:<port>]/<dbname>[?<options>]'
 
 # MySQL:
-DATABASE = 'mysql+pymysql://<user>:<password>@<host>[:<port>]/<dbname>[?<options>]'
+DATABASE='mysql+pymysql://<user>:<password>@<host>[:<port>]/<dbname>[?<options>]'
 
 # Logging aggregation:
-SENTRY_DSN = 'https://<key>:<secret>@sentry.io/<project>'
+SENTRY_DSN='https://<token>@sentry.io/<project>'
 
 # Counting statistics:
-STATSD_HOST = '...'
+STATSD_HOST='...'
+STATSD_PORT=8125
 ```
-
-You can pass those values also in form of environment variables.
 
 
 ## Development
