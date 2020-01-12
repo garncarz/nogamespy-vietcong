@@ -1,13 +1,12 @@
 language: python
 python:
-  - 3.6
+  - 3.7
 services:
-  - postgresql
+  - docker
 install:
-  - pip install -r requirements.txt -r requirements-test.txt
   - pip install coveralls
-  - ./setup.py build
+  - ./dev.sh build master
 script:
-  ./test.sh
+  ./dev.sh run master ./test.sh
 after_success:
   coveralls
