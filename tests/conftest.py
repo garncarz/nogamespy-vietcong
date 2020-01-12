@@ -1,6 +1,6 @@
 from nogamespy import settings
 
-settings.DATABASE = 'postgresql://postgres@localhost/postgres'
+settings.DATABASE = 'postgresql://postgres@db/postgres'
 
 try:
     from conftest_local import *

@@ -19,3 +19,4 @@ htmlcov
 
 **/*.sqlite
 **/celerybeat-schedule
+**/celerybeat.pid
