@@ -11,6 +11,7 @@ services:
     ports:
       - 28900:28900
     links:
+      - redis
       - db
 
   heartbeat:
@@ -22,6 +23,7 @@ services:
     ports:
       - 27900:27900/udp
     links:
+      - redis
       - db
 
   celery_worker:
