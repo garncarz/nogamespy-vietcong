@@ -4,6 +4,7 @@ import os
 from celery.schedules import crontab
 
 DATABASE = os.getenv('DATABASE', 'postgresql://postgres@db/postgres')
+REDIS_URL = os.getenv('REDIS_URL', 'redis://redis')
 
 GAMESPY_KEY = 'bq98mE'
 
@@ -18,7 +19,8 @@ KEEP_OFFLINE_SERVERS_FOR_MINUTES = 30
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-BROKER_URL = 'redis://redis'
+BROKER_URL = REDIS_URL
+CELERY_RESULT_BACKEND = REDIS_URL
 CELERYD_HIJACK_ROOT_LOGGER = False
 
 CELERYBEAT_SCHEDULE = {

@@ -1,6 +1,7 @@
 import logging
 import socket
 
+from celery import group, chord
 import pygeoip
 import requests
 import sqlalchemy
@@ -29,8 +30,7 @@ def _get_qtracker_list():
 def pull_master(source=None):
     servers = _get_qtracker_list() if not source else protocol.fetch_from_master(source)
 
-    for ip, port in servers:
-        register(ip, port)
+    group(register.s(ip, port) for ip, port in servers)()
 
     statsd.incr('foreign_master_pulled')
 
@@ -94,6 +94,7 @@ def _merge_server_info(server, info):
         server.hradba = info['hbver']
 
 
+@task
 def pull_server_info(server):
     if isinstance(server, int):
         server = models.Server.query.get(server)
@@ -114,22 +115,35 @@ def pull_server_info(server):
         db_session.commit()
 
         logger.debug(f'Pulled info for {server}')
+        statsd.incr('game_server.pulled')
         return True
 
     except socket.timeout:
         logger.debug(f'{server}: UDP timeout')
+        statsd.incr('game_server.connection_error')
         return False
 
     except ConnectionRefusedError:
         logger.debug(f'{server}: connection refused')
+        statsd.incr('game_server.connection_error')
         return False
 
     except OSError as e:
         if e.errno == 113:  # no route to host
             logger.debug(f'{server}: no route to host')
+            statsd.incr('game_server.connection_error')
             return False
-        else:
-            raise
+        raise
+
+    except KeyError:
+        logger.exception(f'{server}: key error')
+        statsd.incr('game_server.key_error')
+        return False
+
+    except pygeoip.GeoIPError:
+        logger.exception(f'{server}: GeoIP error')
+        statsd.incr('game_server.geoip_error')
+        return False
 
 
 @task
@@ -140,15 +154,21 @@ def refresh_all_servers():
     models.Player.query.update({'online': False})
     db_session.commit()
 
-    for server in models.Server.query.all():
-        pull_server_info(server)
+    chord(
+        (pull_server_info.s(server.id) for server in models.Server.query.all()),
+        after_all_servers_are_refreshed.s()
+    )()
 
+
+@task
+def after_all_servers_are_refreshed(_results):
     models.Server.query.filter_by(waiting_for_sync=True).update({'online': False})
     models.remove_offline_entities()
 
     statsd.incr('servers_refreshed')
 
 
+@task
 def register(ip, port, print_it=False, force_pull=False):
     logger.debug(f'Trying to register {ip}:{port}...')
 

@@ -90,7 +90,7 @@ class HeartbeatHandler(socketserver.BaseRequestHandler):
         if msg[1] != 'heartbeat':
             return
 
-        tasks.register(ip=self.client_address[0], port=msg[2], force_pull=True)
+        tasks.register.delay(ip=self.client_address[0], port=msg[2], force_pull=True)
 
         statsd.incr('heartbeat_registered')
 
