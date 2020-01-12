@@ -21,6 +21,8 @@ Run `docker-compose up` to start all services. `Ctrl+C` to exit.
 
 If you want them demonized, use `docker-compose up -d` and `docker-compose down`.
 
+Workers can be scaled by calling `docker-compose up --scale celery_worker=<number>`.
+
 Published ports are:
 - 28900 TCP for the master server (game clients fetch the servers list here)
 - 27900 UDP for the heartbeat service (game servers introduce themselves here)
