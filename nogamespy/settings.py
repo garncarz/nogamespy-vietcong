@@ -3,7 +3,7 @@ import os
 
 from celery.schedules import crontab
 
-DATABASE = os.getenv('DATABASE', 'sqlite:///volume/db.sqlite')
+DATABASE = os.getenv('DATABASE', 'postgresql://postgres@db/postgres')
 
 GAMESPY_KEY = 'bq98mE'
 
@@ -38,7 +38,7 @@ LOGZIO_TOKEN = os.getenv('LOGZIO_TOKEN')
 LOGZIO_LEVEL = os.getenv('LOGZIO_LEVEL', 'INFO')
 
 STATSD_HOST = os.getenv('STATSD_HOST', 'localhost')
-STATSD_PORT = 8125
+STATSD_PORT = int(os.getenv('STATSD_PORT', '8125'))
 STATSD_PREFIX = 'nogamespy'
 
 

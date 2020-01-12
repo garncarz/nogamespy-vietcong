@@ -10,6 +10,8 @@ services:
       - ./volume:/app/volume
     ports:
       - 28900:28900
+    links:
+      - db
 
   heartbeat:
     image: garncarz/nogamespy-vietcong
@@ -19,6 +21,8 @@ services:
       - ./volume:/app/volume
     ports:
       - 27900:27900/udp
+    links:
+      - db
 
   celery_worker:
     image: garncarz/nogamespy-vietcong
@@ -28,6 +32,7 @@ services:
       - ./volume:/app/volume
     links:
       - redis
+      - db
 
   celery_beat:
     image: garncarz/nogamespy-vietcong
@@ -37,6 +42,10 @@ services:
       - ./volume:/app/volume
     links:
       - redis
+      - db
 
   redis:
     image: redis:alpine
+
+  db:
+    image: postgres:alpine
