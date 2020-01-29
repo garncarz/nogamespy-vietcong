@@ -1,3 +1,4 @@
+from datetime import timedelta
 import logging.config
 import os
 
@@ -21,6 +22,7 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 BROKER_URL = REDIS_URL
 CELERY_RESULT_BACKEND = REDIS_URL
+RESULT_EXPIRES = timedelta(minutes=10)
 CELERYD_HIJACK_ROOT_LOGGER = False
 
 CELERYBEAT_SCHEDULE = {
