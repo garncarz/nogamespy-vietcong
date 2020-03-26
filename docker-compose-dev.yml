@@ -23,3 +23,7 @@ services:
     image: nogamespy-vietcong:dev
     volumes:
       - .:/app
+
+  db:
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
