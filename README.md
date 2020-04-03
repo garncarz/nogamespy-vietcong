@@ -29,6 +29,8 @@ Published ports are:
 - 28900 TCP for the master server (game clients fetch the servers list here)
 - 27900 UDP for the heartbeat service (game servers introduce themselves here)
 
+There's also an ARM architecture image (for Raspberry etc.), invoke it like `docker-compose -f docker-compose-arm.yml ...`.
+
 
 ### Configuration
 
@@ -73,3 +75,9 @@ Needed extra: Python 3
 `docker run -it nogamespy-vietcong bash`
 
 `docker run -it -v <local volume path>:/app/volume nogamespy-vietcong ./app.py --help`
+
+### Targetting ARM from Ubuntu
+
+`sudo apt install qemu-user-static`
+
+`cp /usr/bin/qemu-arm-static .`
