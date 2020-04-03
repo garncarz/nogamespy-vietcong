@@ -6,6 +6,8 @@ volume
 celerybeat-schedule
 celerybeat.pid
 
+qemu-arm-static
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
