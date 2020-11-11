@@ -29,7 +29,7 @@ services:
   celery_worker:
     image: garncarz/nogamespy-vietcong
     build: .
-    command: celery worker -A nogamespy -l info
+    command: celery --app nogamespy worker -l info
     volumes:
       - ./volume:/app/volume
     links:
@@ -39,7 +39,7 @@ services:
   celery_beat:
     image: garncarz/nogamespy-vietcong
     build: .
-    command: celery beat -A nogamespy -l info
+    command: celery --app nogamespy beat -l info
     volumes:
       - ./volume:/app/volume
     links:
