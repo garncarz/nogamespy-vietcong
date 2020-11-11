@@ -144,6 +144,11 @@ def pull_server_info(server):
         logger.exception(f'{server}: GeoIP error')
         statsd.incr('game_server.geoip_error')
         return False
+    
+    except Exception:
+        logger.exception(f'{server}: other error')
+        statsd.incr('game_server.pull_error')
+        return False
 
 
 @task
