@@ -3,6 +3,7 @@ conftest_local.py
 docker-compose.override.yml
 volume
 *.sqlite
+*.db
 celerybeat-schedule
 celerybeat.pid
 
