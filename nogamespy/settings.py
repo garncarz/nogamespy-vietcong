@@ -107,7 +107,7 @@ except ImportError:
 
 LOGGING = LOGGING()
 
-if LOGZIO_TOKEN:
+if LOGZIO_TOKEN and 'TESTING' not in os.environ:
     LOGGING['handlers']['logzio'] = {
         'level': LOGZIO_LEVEL,
         'class': 'logzio.handler.LogzioHandler',
@@ -121,4 +121,5 @@ if LOGZIO_TOKEN:
 
     LOGGING['loggers']['']['handlers'].append('logzio')
 
-logging.config.dictConfig(LOGGING)
+if 'TESTING' not in os.environ:
+    logging.config.dictConfig(LOGGING)
