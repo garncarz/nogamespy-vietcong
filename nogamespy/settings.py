@@ -3,6 +3,8 @@ import logging.config
 import os
 
 from celery.schedules import crontab
+import sentry_sdk
+from sentry_sdk.integrations.logging import LoggingIntegration
 
 DATABASE = os.getenv('DATABASE', 'postgresql://postgres@db/postgres')
 REDIS_URL = os.getenv('REDIS_URL', 'redis://redis')
@@ -38,6 +40,17 @@ CELERYBEAT_SCHEDULE = {
 
 SENTRY_DSN = os.getenv('SENTRY_DSN')
 
+# Initialize Sentry SDK
+if SENTRY_DSN:
+    sentry_logging = LoggingIntegration(
+        level=logging.INFO,  # Capture info and above as breadcrumbs
+        event_level=logging.WARNING  # Send warnings and above as events
+    )
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[sentry_logging]
+    )
+
 LOGZIO_TOKEN = os.getenv('LOGZIO_TOKEN')
 LOGZIO_LEVEL = os.getenv('LOGZIO_LEVEL', 'INFO')
 
@@ -64,7 +77,7 @@ LOGGING = lambda: {
                       '%(filename)s:%(funcName)s:%(lineno)d | %(message)s',
         },
         'logzioFormat': {
-            'format': '{"app": "nogamespy"}',
+            'format': '%(message)s',
         },
     },
 
@@ -80,18 +93,11 @@ LOGGING = lambda: {
             'class': 'logging.StreamHandler',
             'formatter': 'verbose',
         },
-        'sentry': {
-            'level': 'WARNING',
-            'class': 'raven.handlers.logging.SentryHandler',
-            'dsn': SENTRY_DSN,
-            'filters': ['mute_at_sentry'],
-            # 'release': raven.fetch_git_sha(BASE_DIR),
-        },
     },
 
     'loggers': {
         '': {
-            'handlers': ['console', 'sentry'],
+            'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': False,
         },

@@ -1,9 +1,9 @@
-from statsd import StatsClient
+from datadog import DogStatsd
 
 from . import settings
 
-statsd = StatsClient(
+statsd = DogStatsd(
     host=settings.STATSD_HOST,
     port=settings.STATSD_PORT,
-    prefix=settings.STATSD_PREFIX,
+    namespace=settings.STATSD_PREFIX,
 )
