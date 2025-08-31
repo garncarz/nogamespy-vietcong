@@ -64,7 +64,7 @@ LOGGING = lambda: {
                       '%(filename)s:%(funcName)s:%(lineno)d | %(message)s',
         },
         'logzioFormat': {
-            'format': '{"app": "nogamespy"}',
+            'format': '%(message)s',
         },
     },
 
