@@ -6,7 +6,6 @@ from . import settings
 
 db_engine = create_engine(
     settings.DATABASE,
-    convert_unicode=True,
 )
 
 db_session = scoped_session(

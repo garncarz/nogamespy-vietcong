@@ -32,7 +32,7 @@ def pull_master(source=None):
 
     group(register.s(ip, port) for ip, port in servers)()
 
-    statsd.incr('foreign_master_pulled')
+    statsd.increment('foreign_master_pulled')
 
 
 def _get_map_and_mode(info):
@@ -68,6 +68,12 @@ def _merge_players_info(server, info):
             break
 
     server.num_players = players_count
+    
+    # Report player count as a gauge metric with server tags
+    statsd.gauge('game_server.players', players_count, tags=[
+        f'ip:{server.ip}',
+        f'name:{server.name}' if server.name else 'name:unknown'
+    ])
 
 
 def _merge_server_info(server, info):
@@ -115,34 +121,34 @@ def pull_server_info(server):
         db_session.commit()
 
         logger.debug(f'Pulled info for {server}')
-        statsd.incr('game_server.pulled')
+        statsd.increment('game_server.pulled', tags=[f'ip:{server.ip}'])
         return True
 
     except socket.timeout:
         logger.debug(f'{server}: UDP timeout')
-        statsd.incr('game_server.connection_error')
+        statsd.increment('game_server.connection_error', tags=[f'ip:{server.ip}', 'error:timeout'])
         return False
 
     except ConnectionRefusedError:
         logger.debug(f'{server}: connection refused')
-        statsd.incr('game_server.connection_error')
+        statsd.increment('game_server.connection_error', tags=[f'ip:{server.ip}', 'error:connection_refused'])
         return False
 
     except OSError as e:
         if e.errno == 113:  # no route to host
             logger.debug(f'{server}: no route to host')
-            statsd.incr('game_server.connection_error')
+            statsd.increment('game_server.connection_error', tags=[f'ip:{server.ip}', 'error:no_route_to_host'])
             return False
         raise
 
     except KeyError:
         logger.exception(f'{server}: key error')
-        statsd.incr('game_server.key_error')
+        statsd.increment('game_server.key_error', tags=[f'ip:{server.ip}'])
         return False
 
     except pygeoip.GeoIPError:
         logger.exception(f'{server}: GeoIP error')
-        statsd.incr('game_server.geoip_error')
+        statsd.increment('game_server.geoip_error', tags=[f'ip:{server.ip}'])
         return False
 
 
@@ -165,7 +171,15 @@ def after_all_servers_are_refreshed(_results):
     models.Server.query.filter_by(waiting_for_sync=True).update({'online': False})
     models.remove_offline_entities()
 
-    statsd.incr('servers_refreshed')
+    # Report total number of online players across all servers
+    total_online_players = db_session.query(models.Player).filter_by(online=True).count()
+    statsd.gauge('game_servers.total_players', total_online_players)
+    
+    # Report total number of online servers
+    total_online_servers = db_session.query(models.Server).filter_by(online=True).count()
+    statsd.gauge('game_servers.total_servers', total_online_servers)
+
+    statsd.increment('servers_refreshed')
 
 
 @task

@@ -66,7 +66,7 @@ class MasterHandler(socketserver.BaseRequestHandler):
         self.request.sendall('\\basic\\\\secure\\'.encode('latin1'))
         self.request.send(get_encoded_server_list())
 
-        statsd.incr('master_pulled')
+        statsd.increment('master_pulled', tags=[f'client_ip:{self.request.getpeername()[0]}'])
 
 
 class HeartbeatService(socketserver.UDPServer):
@@ -92,7 +92,7 @@ class HeartbeatHandler(socketserver.BaseRequestHandler):
 
         tasks.register.delay(ip=self.client_address[0], port=msg[2], force_pull=True)
 
-        statsd.incr('heartbeat_registered')
+        statsd.increment('heartbeat_registered', tags=[f'server_ip:{self.client_address[0]}', f'port:{msg[2]}'])
 
 
 def fetch_from_master(ip):
