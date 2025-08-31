@@ -14,11 +14,15 @@ from nogamespy import database, models
 
 @pytest.fixture(scope='module', autouse=True)
 def db_create():
-    database.db_engine.execute('drop schema if exists public cascade')
-    database.db_engine.execute('create schema public')
+    with database.db_engine.connect() as conn:
+        conn.execute(database.sqlalchemy.text('drop schema if exists public cascade'))
+        conn.execute(database.sqlalchemy.text('create schema public'))
+        conn.commit()
     models.Base.metadata.create_all(database.db_engine)
 
     yield
 
     database.db_session.close_all()
-    database.db_engine.execute('drop schema public cascade')
+    with database.db_engine.connect() as conn:
+        conn.execute(database.sqlalchemy.text('drop schema public cascade'))
+        conn.commit()

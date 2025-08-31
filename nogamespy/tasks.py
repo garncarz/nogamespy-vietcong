@@ -28,7 +28,12 @@ def _get_qtracker_list():
 
 @task
 def pull_master(source=None):
-    servers = _get_qtracker_list() if not source else protocol.fetch_from_master(source)
+    if not source:
+        # Qtracker is down, so don't attempt to pull from it
+        logger.info("No source provided and Qtracker is down - skipping pull_master")
+        return
+    
+    servers = protocol.fetch_from_master(source)
 
     group(register.s(ip, port) for ip, port in servers)()
 
