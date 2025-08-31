@@ -113,6 +113,24 @@ def fetch_from_master(ip):
     return servers
 
 
+def _fix_swapped_server_info(info):
+    """
+    Fix server info dictionaries where keys and values are swapped.
+    Some game servers return misformatted data with value:key instead of key:value.
+    """
+    # Expected keys that should be present in a properly formatted response
+    expected_keys = {'mapname', 'gametype', 'hostname', 'hostport', 'uver', 'maxplayers', 'numplayers'}
+    
+    # Check if any expected keys are missing but their values appear as keys
+    missing_keys = expected_keys - set(info.keys())
+    if missing_keys and any(key in info.values() for key in missing_keys):
+        logger.debug('Detected swapped key-value pairs in server info, attempting to fix...')
+        # Swap keys and values
+        return {v: k for k, v in info.items()}
+    
+    return info
+
+
 def get_server_info(server):
     logger.debug(f'Trying to get info from {server.ip}:{server.info_port}...')
 
@@ -124,4 +142,5 @@ def get_server_info(server):
     data = udp.recv(4096).decode('ascii')
     arr = re.split('\\\\', data)[1:-4]
 
-    return dict(zip(arr[::2], arr[1::2]))
+    info = dict(zip(arr[::2], arr[1::2]))
+    return _fix_swapped_server_info(info)
