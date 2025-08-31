@@ -25,6 +25,14 @@ CELERY_RESULT_BACKEND = REDIS_URL
 CELERY_RESULT_EXPIRES = timedelta(minutes=10)
 CELERYD_HIJACK_ROOT_LOGGER = False
 
+# Eventlet configuration
+CELERYD_POOL = 'eventlet'
+CELERYD_CONCURRENCY = 1000
+
+# Worker memory and task management
+CELERYD_MAX_TASKS_PER_CHILD = int(os.getenv('CELERY_MAX_TASKS_PER_CHILD', '1000'))
+CELERYD_MAX_MEMORY_PER_CHILD = int(os.getenv('CELERY_MAX_MEMORY_PER_CHILD', '200000'))  # 200MB in KB
+
 CELERYBEAT_SCHEDULE = {
     'refresh_all_servers': {
         'task': 'nogamespy.tasks.refresh_all_servers',
@@ -62,9 +70,6 @@ LOGGING = lambda: {
         'verbose': {
             'format': '[%(asctime)s][%(levelname)s] %(name)s '
                       '%(filename)s:%(funcName)s:%(lineno)d | %(message)s',
-        },
-        'logzioFormat': {
-            'format': '{"app": "nogamespy"}',
         },
     },
 
@@ -108,6 +113,10 @@ except ImportError:
 LOGGING = LOGGING()
 
 if LOGZIO_TOKEN:
+    LOGGING['formatters']['logzioFormat'] = {
+        'format': '{"app": "nogamespy"}',
+    }
+    
     LOGGING['handlers']['logzio'] = {
         'level': LOGZIO_LEVEL,
         'class': 'logzio.handler.LogzioHandler',
