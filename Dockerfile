@@ -5,6 +5,14 @@ workdir /app
 
 copy . .
 
+# Download free GeoIP database from DB-IP (no registration required)
+run apt-get update \
+  && apt-get install -y curl \
+  && curl -L -o /usr/share/dbip-country-lite.mmdb.gz "https://download.db-ip.com/free/dbip-country-lite-$(date +'%Y-%m').mmdb.gz" \
+  || curl -L -o /usr/share/dbip-country-lite.mmdb.gz "https://download.db-ip.com/free/dbip-country-lite-$(date -d '-1 month' +'%Y-%m').mmdb.gz" \
+  && gunzip /usr/share/dbip-country-lite.mmdb.gz \
+  && rm -rf /var/lib/apt/lists/*
+
 run BUILD_DEPS='gcc' \
   && apt-get update \
   && apt-get install -y $BUILD_DEPS \
