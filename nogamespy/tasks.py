@@ -14,7 +14,13 @@ logger = logging.getLogger(__name__)
 
 task = celery.app.task
 
-geoip = pygeoip.GeoIP('/usr/share/GeoIP/GeoIP.dat')
+# Initialize GeoIP with graceful fallback for missing database
+try:
+    geoip = pygeoip.GeoIP('/usr/share/GeoIP/GeoIP.dat')
+    logger.info('GeoIP database loaded successfully')
+except (IOError, OSError) as e:
+    logger.warning(f'GeoIP database not available: {e}. Country lookups will be disabled.')
+    geoip = None
 
 
 def _get_qtracker_list():
@@ -79,8 +85,18 @@ def _merge_server_info(server, info):
     server.dedicated = 'dedic' in info
     server.vietnam = 'vietnam' in info
 
-    server.country = geoip.country_code_by_addr(server.ip)
-    server.country_name = geoip.country_name_by_addr(server.ip)
+    # Set country information if GeoIP is available
+    if geoip is not None:
+        try:
+            server.country = geoip.country_code_by_addr(server.ip)
+            server.country_name = geoip.country_name_by_addr(server.ip)
+        except pygeoip.GeoIPError:
+            logger.debug(f'GeoIP lookup failed for {server.ip}')
+            server.country = None
+            server.country_name = None
+    else:
+        server.country = None
+        server.country_name = None
 
     server.name = info['hostname']
 
