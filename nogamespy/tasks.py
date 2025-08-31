@@ -164,6 +164,12 @@ def refresh_all_servers():
 def after_all_servers_are_refreshed(_results):
     models.Server.query.filter_by(waiting_for_sync=True).update({'online': False})
     models.remove_offline_entities()
+    
+    # Fix servers that should be online but are marked offline incorrectly
+    models.Server.query.filter(
+        models.Server.offline_since.is_(None)
+    ).update({'online': True})
+    db_session.commit()
 
     statsd.incr('servers_refreshed')
 
