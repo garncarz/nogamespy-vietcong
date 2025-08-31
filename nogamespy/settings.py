@@ -16,6 +16,12 @@ HEARTBEAT_PORT = 27900
 
 KEEP_OFFLINE_SERVERS_FOR_MINUTES = 30
 
+# Parse foreign master servers from environment variable
+FOREIGN_MASTER_SERVERS = []
+foreign_servers_env = os.getenv('FOREIGN_MASTER_SERVERS', '').strip()
+if foreign_servers_env:
+    FOREIGN_MASTER_SERVERS = [ip.strip() for ip in foreign_servers_env.split(',') if ip.strip()]
+
 # Celery:
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
@@ -30,11 +36,23 @@ CELERYBEAT_SCHEDULE = {
         'task': 'nogamespy.tasks.refresh_all_servers',
         'schedule': crontab(minute='*/2'),
     },
-    'pull_master': {
+}
+
+# Add tasks for each foreign master server
+for i, server_ip in enumerate(FOREIGN_MASTER_SERVERS):
+    CELERYBEAT_SCHEDULE[f'pull_master_{i}'] = {
+        'task': 'nogamespy.tasks.pull_master',
+        'args': [server_ip],
+        'schedule': crontab(minute='*/5'),
+    }
+
+# If no foreign servers are configured, keep the original behavior (but avoid Qtracker)
+if not FOREIGN_MASTER_SERVERS:
+    # Note: Qtracker is down, so this task won't pull from there anymore
+    CELERYBEAT_SCHEDULE['pull_master'] = {
         'task': 'nogamespy.tasks.pull_master',
         'schedule': crontab(minute='*/5'),
-    },
-}
+    }
 
 SENTRY_DSN = os.getenv('SENTRY_DSN')
 
