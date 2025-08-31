@@ -145,6 +145,11 @@ def pull_server_info(server):
         statsd.incr('game_server.geoip_error')
         return False
 
+    except UnicodeDecodeError:
+        logger.debug(f'{server}: invalid character encoding in server response')
+        statsd.incr('game_server.encoding_error')
+        return False
+
 
 @task
 def refresh_all_servers():
