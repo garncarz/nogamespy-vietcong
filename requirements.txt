@@ -1,8 +1,8 @@
 alembic
 celery[redis]
 logzio-python-handler
+maxminddb
 psycopg2-binary
-pygeoip
 pymysql
 raven
 requests

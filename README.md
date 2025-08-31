@@ -27,6 +27,8 @@ Published ports are:
 - 28900 TCP for the master server (game clients fetch the servers list here)
 - 27900 UDP for the heartbeat service (game servers introduce themselves here)
 
+**Note**: GeoIP functionality uses the free DB-IP database for country lookups. The database is automatically downloaded during Docker build. If no GeoIP database is available, the application will continue to work without country information for servers.
+
 
 ### Configuration
 

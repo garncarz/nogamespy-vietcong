@@ -2,7 +2,7 @@ import logging
 import socket
 
 from celery import group, chord
-import pygeoip
+import maxminddb
 import requests
 import sqlalchemy
 
@@ -14,7 +14,26 @@ logger = logging.getLogger(__name__)
 
 task = celery.app.task
 
-geoip = pygeoip.GeoIP('/usr/share/GeoIP/GeoIP.dat')
+# Initialize GeoIP with graceful fallback for missing database
+# Try DB-IP free database first, then fall back to legacy path
+geoip_reader = None
+geoip_database_paths = [
+    '/usr/share/dbip-country-lite.mmdb',  # DB-IP free database
+    '/usr/share/GeoIP/GeoIP.dat',         # Legacy MaxMind path (for backward compatibility)
+]
+
+for db_path in geoip_database_paths:
+    try:
+        geoip_reader = maxminddb.open_database(db_path)
+        logger.info(f'GeoIP database loaded successfully: {db_path}')
+        break
+    except (IOError, OSError, maxminddb.errors.InvalidDatabaseError) as e:
+        logger.debug(f'GeoIP database not available at {db_path}: {e}')
+        continue
+
+if geoip_reader is None:
+    logger.warning('No GeoIP database found. Country lookups will be disabled. '
+                  'Consider downloading a free database from DB-IP or registering for MaxMind GeoLite2.')
 
 
 def _get_qtracker_list():
@@ -79,8 +98,23 @@ def _merge_server_info(server, info):
     server.dedicated = 'dedic' in info
     server.vietnam = 'vietnam' in info
 
-    server.country = geoip.country_code_by_addr(server.ip)
-    server.country_name = geoip.country_name_by_addr(server.ip)
+    # Set country information if GeoIP is available
+    if geoip_reader is not None:
+        try:
+            result = geoip_reader.get(server.ip)
+            if result and 'country' in result:
+                server.country = result['country']['iso_code']
+                server.country_name = result['country']['names'].get('en', server.country)
+            else:
+                server.country = None
+                server.country_name = None
+        except Exception as e:
+            logger.debug(f'GeoIP lookup failed for {server.ip}: {e}')
+            server.country = None
+            server.country_name = None
+    else:
+        server.country = None
+        server.country_name = None
 
     server.name = info['hostname']
 
@@ -138,11 +172,6 @@ def pull_server_info(server):
     except KeyError:
         logger.exception(f'{server}: key error')
         statsd.incr('game_server.key_error')
-        return False
-
-    except pygeoip.GeoIPError:
-        logger.exception(f'{server}: GeoIP error')
-        statsd.incr('game_server.geoip_error')
         return False
 
 
