@@ -7,7 +7,12 @@ install:
   - pip install coveralls
   - ./dev.sh build master
 script:
-  - ./dev.sh run master ./test.sh
+  # Create a temporary directory to hold coverage data
+  - mkdir -p coverage_output
+  # Run tests and copy coverage data to a mounted volume
+  - ./dev.sh run -v $PWD/coverage_output:/coverage_output master bash -c "./test.sh && cp .coverage /coverage_output/ 2>/dev/null || echo 'No .coverage file to copy'"
+  # Move coverage file to the current directory
+  - test -f coverage_output/.coverage && mv coverage_output/.coverage . || echo "No coverage file found"
 after_success:
   - ls -la .coverage* || echo "No coverage files found"
-  - test -f .coverage && coveralls || echo "Coverage file not found, skipping coveralls"
+  - test -f .coverage && coveralls || echo "No .coverage file found, skipping coveralls"
