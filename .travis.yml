@@ -13,6 +13,8 @@ script:
   - ./dev.sh run -v $PWD/coverage_output:/coverage_output master bash -c "./test.sh && cp .coverage /coverage_output/ 2>/dev/null || echo 'No .coverage file to copy'"
   # Move coverage file to the current directory
   - test -f coverage_output/.coverage && mv coverage_output/.coverage . || echo "No coverage file found"
+  # Clean up temporary directory
+  - rm -rf coverage_output
 after_success:
   - ls -la .coverage* || echo "No coverage files found"
   - test -f .coverage && coveralls || echo "No .coverage file found, skipping coveralls"
