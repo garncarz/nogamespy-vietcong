@@ -40,3 +40,54 @@ def test_decode_list():
         ('1.2.3.4', 15425),
         ('5.6.7.10', 15426),
     ]
+
+
+def test_fix_swapped_server_info():
+    """Test that _fix_swapped_server_info correctly detects and fixes swapped key-value pairs."""
+    # Normal case - no swapping needed
+    normal_info = {
+        'mapname': 'map1', 
+        'gametype': 'dm', 
+        'hostname': 'server1',
+        'hostport': '27015',
+        'uver': '1234',
+        'maxplayers': '16',
+        'numplayers': '5'
+    }
+    result = protocol._fix_swapped_server_info(normal_info)
+    assert result == normal_info
+    
+    # Swapped case - should be fixed
+    swapped_info = {
+        'map1': 'mapname',
+        'dm': 'gametype', 
+        'server1': 'hostname',
+        '27015': 'hostport',
+        '1234': 'uver',
+        '16': 'maxplayers',
+        '5': 'numplayers'
+    }
+    result = protocol._fix_swapped_server_info(swapped_info)
+    assert result == normal_info
+    
+    # Partial case - some keys correct, some swapped (should still fix)
+    partial_swapped_info = {
+        'map1': 'mapname',
+        'gametype': 'dm',  # This one is correct
+        'server1': 'hostname',
+        '27015': 'hostport',
+        '1234': 'uver',
+        '16': 'maxplayers',
+        '5': 'numplayers'
+    }
+    result = protocol._fix_swapped_server_info(partial_swapped_info)
+    expected = {
+        'mapname': 'map1',
+        'dm': 'gametype',  # This gets swapped too
+        'hostname': 'server1',
+        'hostport': '27015',
+        'uver': '1234',
+        'maxplayers': '16',
+        'numplayers': '5'
+    }
+    assert result == expected
