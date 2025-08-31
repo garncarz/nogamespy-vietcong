@@ -23,6 +23,17 @@ If you want them demonized, use `docker-compose up -d` and `docker-compose down`
 
 Workers can be scaled by calling `docker-compose up --scale celery_worker=<number>`.
 
+### Celery Eventlet Configuration
+
+The project now uses Eventlet for Celery worker concurrency, which can improve memory consumption and handle many concurrent I/O operations efficiently. Key settings:
+
+- **Pool**: `eventlet` (configured in settings.py)
+- **Default concurrency**: 1000 green threads
+- **Memory management**: Workers restart after 1000 tasks or 200MB memory usage
+- **Custom limits**: Set via `CELERY_MAX_TASKS_PER_CHILD` and `CELERY_MAX_MEMORY_PER_CHILD` environment variables
+
+To monitor memory consumption, check worker logs or use system monitoring tools.
+
 Published ports are:
 - 28900 TCP for the master server (game clients fetch the servers list here)
 - 27900 UDP for the heartbeat service (game servers introduce themselves here)
@@ -38,6 +49,10 @@ DATABASE='postgresql://<user>:<password>@<host>[:<port>]/<dbname>[?<options>]'
 
 # MySQL:
 DATABASE='mysql+pymysql://<user>:<password>@<host>[:<port>]/<dbname>[?<options>]'
+
+# Celery Worker Memory Management:
+CELERY_MAX_TASKS_PER_CHILD=1000          # Tasks per worker before restart
+CELERY_MAX_MEMORY_PER_CHILD=200000       # Memory limit in KB before restart
 
 # Logging aggregation:
 SENTRY_DSN='https://<token>@sentry.io/<project>'
