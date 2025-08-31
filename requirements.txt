@@ -1,5 +1,6 @@
 alembic
 celery[redis]
+eventlet
 logzio-python-handler
 psycopg2-binary
 pygeoip
